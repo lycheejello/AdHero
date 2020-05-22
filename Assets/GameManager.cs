@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour {
 
     void Start() {
         adsManager = GetComponent<AdsManager>();
-        adsManager.SetAdCompleteHandler(OnAdCompleted); 
+        adsManager.SetAdCompleteHandler(OnAdCompleted);
         coinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
 
         if (welcomeComplete) {
@@ -61,6 +61,9 @@ public class GameManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+        if (adsManager.isPlayingAd) {
+            return;
+        }
 
         if (Input.touchCount > 0) {
             Touch touch = Input.GetTouch(0);
@@ -72,7 +75,7 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void HandleText(){
+    private void HandleText() {
         switch (welcomeIndex) {
             case 0:
                 ShowTitle();
@@ -142,29 +145,14 @@ public class GameManager : MonoBehaviour {
 
     //notice case + 1 is the end of welcomeIndex;
     public void OnAdCompleted(AdsManager.AdType adType) {
-        switch (welcomeIndex) {
-            case 0:
+        switch (adType) {
+            case AdsManager.AdType.Interstitial:
                 break;
-            case 1:
+            case AdsManager.AdType.Rewarded:
+                AddCoins(20);
                 break;
-            case 2:
-                break;
-            case 3:
-            case 4:
-                switch (adType) {
-                    case AdsManager.AdType.Interstitial:
-                        break;
-                    case AdsManager.AdType.Rewarded:
-                        AddCoins(20);
-                        break;
-                    case AdsManager.AdType.RewardedInterstitial:
-                        AddCoins(50);
-                        break;
-                }
-                break;
-            case 5:
-                break;
-            case 6:
+            case AdsManager.AdType.RewardedInterstitial:
+                AddCoins(50);
                 break;
         }
     }
@@ -205,10 +193,13 @@ public class GameManager : MonoBehaviour {
         if (!loginField.interactable) {
             AddCoins(-5);
             UnlockUsername();
-        } else {
+        } else if (welcomeIndex == 3) { //username
             AddCoins(-1 * GetUserNameCost(loginField.text));
             username = loginField.text;
             loginField.text = "";
+            OnProceed();
+        } else { //must be password
+            AddCoins(-1 * GetPasswordCost(loginField.text));
             OnProceed();
         }
     }
@@ -218,6 +209,10 @@ public class GameManager : MonoBehaviour {
     }
     private int GetUserNameCost(string name) {
         return name.Length * 10;
+    }
+
+    private int GetPasswordCost(string password) {
+        return password.Length * 10;
     }
 
 

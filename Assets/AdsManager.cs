@@ -20,6 +20,8 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
     public delegate void AdCompleteHandler(AdType adType);
     private AdCompleteHandler adCompleteHandler;
 
+    public bool isPlayingAd { get; private set; }
+
     public enum AdType {
         Interstitial,
         Rewarded,
@@ -38,6 +40,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
     }
 
     public void ShowAd(AdType adType) {
+        isPlayingAd = true;
         switch (adType) {
             case AdType.Interstitial:
                 Advertisement.Show(interstitialId);
@@ -53,6 +56,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
 
     public void OnUnityAdsDidFinish(string placementId, ShowResult showResult) {
         // Define conditional logic for each ad completion status:
+        isPlayingAd = false;
         if (showResult == ShowResult.Finished) {
             /*
             switch (PlacementIdToAdType(placementId)) {

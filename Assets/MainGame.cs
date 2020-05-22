@@ -14,7 +14,11 @@ public class MainGame : MonoBehaviour {
     [SerializeField] GameObject levelUpPanel;
     //[SerializeField] GameObject messagePanel;
 
+    [SerializeField] GameObject usernameText;
+    [SerializeField] GameObject levelText;
+
     [SerializeField] GameObject coinsText;
+
 
     private int coins = 50;
     private string username = "";
@@ -41,6 +45,8 @@ public class MainGame : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+
+
         if (Input.touchCount > 0) {
             Touch touch = Input.GetTouch(0);
             if (touch.phase == TouchPhase.Began) {
@@ -73,6 +79,8 @@ public class MainGame : MonoBehaviour {
 
     public void NavMainMenu() {
         NavReset();
+        usernameText.GetComponent<TMP_Text>().SetText(username);
+        levelText.GetComponent<TMP_Text>().SetText("Level {0}", level);
         mainPanel.SetActive(true);
     }
 
