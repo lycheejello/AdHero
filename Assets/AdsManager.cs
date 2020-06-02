@@ -15,6 +15,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
     private const string rewardedId = "rewardedVideo";
     private const string rewardedInterstitialId = "rewardedInterstitial";
     private const string interstitialId = "video";
+    private const string bannerAd = "banner";
 
     private GameManager game;
     public delegate void AdCompleteHandler(AdType adType);
@@ -33,6 +34,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
         adsReady = (Advertisement.IsReady(rewardedId) && Advertisement.IsReady(rewardedInterstitialId) && Advertisement.IsReady(interstitialId));
         Advertisement.AddListener(this);
         Advertisement.Initialize(gameId, testMode);
+        Advertisement.Banner.SetPosition(BannerPosition.CENTER);
     }
 
     public void SetAdCompleteHandler(AdCompleteHandler handler) {
@@ -107,5 +109,13 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
 
     public void OnUnityAdsDidStart(string placementId) {
         // Optional actions to take when the end-users triggers an ad.
+    }
+
+    public void ShowBannerAd() {
+        Advertisement.Banner.Show(bannerAd);
+    }
+
+    public void HideBannerAd() {
+        Advertisement.Banner.Hide();
     }
 }

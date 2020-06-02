@@ -12,6 +12,7 @@ public class MainGame : MonoBehaviour {
     [SerializeField] GameObject earnCoinsPanel;
     [SerializeField] GameObject accountPanel;
     [SerializeField] GameObject levelUpPanel;
+    [SerializeField] GameObject premiumPanel;
     //[SerializeField] GameObject messagePanel;
 
     [SerializeField] GameObject usernameText;
@@ -66,7 +67,7 @@ public class MainGame : MonoBehaviour {
 
     public void HandleInput() {
         //if (messagePanel.activeSelf) {
-            //messagePanel.SetActive(false);
+        //messagePanel.SetActive(false);
         //}
     }
     private void NavReset() {
@@ -75,6 +76,10 @@ public class MainGame : MonoBehaviour {
         //messagePanel.SetActive(false);
         levelUpPanel.SetActive(false);
         earnCoinsPanel.SetActive(false);
+        premiumPanel.SetActive(false);
+
+        adsManager.HideBannerAd();
+
     }
 
     public void NavMainMenu() {
@@ -95,7 +100,9 @@ public class MainGame : MonoBehaviour {
     }
 
     public void NavPremium() {
-        adsManager.ShowAd(AdsManager.AdType.Rewarded);
+        NavReset();
+        premiumPanel.SetActive(true);
+        adsManager.ShowBannerAd();
     }
 
     public void OnEarnCoins() {
@@ -164,21 +171,24 @@ public class MainGame : MonoBehaviour {
 
         Sprite bg;
         if (colorUnlocked) {
-            bg =  Resources.Load<Sprite>("Morning");
+            bg = Resources.Load<Sprite>("Morning");
         } else {
             bg = Resources.Load<Sprite>("Morning-BW");
         }
 
-        GameObject[] panels = new GameObject[] {mainPanel, earnCoinsPanel, accountPanel, levelUpPanel};
+        GameObject[] panels = new GameObject[] { mainPanel, earnCoinsPanel, accountPanel, levelUpPanel };
         foreach (GameObject p in panels) {
             p.GetComponent<Image>().sprite = bg;
         }
-
-}
+    }
 
     public void OnUnlockSound() {
         AddCoins(-200);
         ToggleSound();
+    }
+
+    public void OnUnlockAds() {
+        adsManager.HideBannerAd();
     }
 
     private void ToggleSound() {

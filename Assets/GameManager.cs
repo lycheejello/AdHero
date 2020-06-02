@@ -30,10 +30,19 @@ public class GameManager : MonoBehaviour {
     private int welcomeIndex = 0;
     [SerializeField] private GameObject titlePanel;
     [SerializeField] private GameObject messagePanel;
+    [SerializeField] private TMP_Text tapToContinue;
+
+    [SerializeField] private float messageSpeed = 0.05f;
+    private IEnumerator messageCoroutine;
+
     [SerializeField] private GameObject loginPanel;
 
     private int coins = 0;
     [SerializeField] private GameObject coinsText;
+
+
+    [SerializeField] private Image transitionImage;
+    [SerializeField] private float transitionLength = 0.4f;
 
     void Start() {
         adsManager = GetComponent<AdsManager>();
@@ -45,6 +54,7 @@ public class GameManager : MonoBehaviour {
         } else {
             welcomeSequence.SetActive(true);
             mainGame.SetActive(false);
+            ShowTitle();
         }
     }
 
@@ -78,34 +88,25 @@ public class GameManager : MonoBehaviour {
     private void HandleText() {
         switch (welcomeIndex) {
             case 0:
-                ShowTitle();
                 coinsText.SetActive(false);
                 break;
             case 1:
-                ShowMessage("We see you are a 1st time user. Please enjoy this ad to activate ADHERO PREMIUM");
                 coinsText.SetActive(false);
                 break;
             case 2:
-                ShowMessage("Here are some coins to start you off");
                 coinsText.SetActive(true);
                 break;
             case 3:
-                ShowLogin("Username cost based on whatever");
+                StartCoroutine(ShowLogin("Username cost based on whatever"));
                 if (loginField.interactable) {
                     button1.GetComponentInChildren<TMP_Text>().SetText("Confirm username\n({0}g)", GetUserNameCost(loginField.text));
                 }
                 break;
             case 4:
-                ShowLogin("Password cost based on whoever");
+                StartCoroutine(ShowLogin("Password cost based on whoever"));
                 if (loginField.interactable) {
                     button1.GetComponentInChildren<TMP_Text>().SetText("Confirm password\n({0}g)", GetUserNameCost(loginField.text));
                 }
-                break;
-            case 5:
-                ShowMessage(string.Format("Go forth, {0} and fullfill your destiny... after these messages.", username));
-                break;
-            case 6:
-                ShowMessage(string.Format("Your AdHero Premium trial has ended", username));
                 break;
             default:
                 break;
@@ -114,13 +115,13 @@ public class GameManager : MonoBehaviour {
     }
 
     private void HandleInput() {
-        if (welcomeComplete) {
+        if (!tapToContinue.enabled || welcomeComplete) {
             return;
         }
         switch (welcomeIndex) {
             case 0:
-                ShowTitle();
                 OnProceed();
+                StartCoroutine(ShowMessage("Welcome, Hero! Please enjoy this ad to for a free ADHERO PREMIUM trial.", transitionLength));
                 break;
             case 1:
                 OnProceedWithAd(AdsManager.AdType.RewardedInterstitial);
@@ -128,22 +129,19 @@ public class GameManager : MonoBehaviour {
             case 2:
                 OnProceed();
                 break;
-            case 3:
-                break;
-            case 4:
-                break;
             case 5:
                 OnProceedWithAd(AdsManager.AdType.Interstitial);
                 break;
             case 6:
-                Invoke("MuteAll", 1.0f);
-                Invoke("StartMainGame", 5f);
+                StartCoroutine(MuteAll());
+                welcomeIndex += 1;
                 break;
-
+            case 7:
+                StartMainGame();
+                break;
         }
     }
 
-    //notice case + 1 is the end of welcomeIndex;
     public void OnAdCompleted(AdsManager.AdType adType) {
         switch (adType) {
             case AdsManager.AdType.Interstitial:
@@ -152,7 +150,16 @@ public class GameManager : MonoBehaviour {
                 AddCoins(20);
                 break;
             case AdsManager.AdType.RewardedInterstitial:
-                AddCoins(50);
+                //AddCoins(50);
+                break;
+        }
+
+        switch (welcomeIndex) {
+            case 2:
+                StartCoroutine(ShowMessage("Here are some coins to start you off.", transitionLength));
+                AddCoins(50); break;
+            case 6:
+                StartCoroutine(ShowMessage(string.Format("Your AdHero Premium trial has ended.", username), transitionLength));
                 break;
         }
     }
@@ -163,15 +170,43 @@ public class GameManager : MonoBehaviour {
         loginPanel.SetActive(false);
     }
 
-    private void ShowMessage(string msg) {
+    private IEnumerator ShowMessage(string msg, float waitTime) {
+        TMP_Text messageText = messagePanel.GetComponentInChildren<TMP_Text>();
+        messageText.SetText("");
+        if (messageCoroutine != null) {
+            StopCoroutine(messageCoroutine);
+        }
+        tapToContinue.enabled = false;
+        yield return new WaitForSeconds(waitTime / 2);
         titlePanel.SetActive(false);
         messagePanel.SetActive(true);
         loginPanel.SetActive(false);
 
-        messagePanel.GetComponentInChildren<TMP_Text>().SetText(msg);
+        yield return new WaitForSeconds(waitTime / 2);
+        messageCoroutine = TypeDialogue(msg, messageText);
+        StartCoroutine(messageCoroutine);
+        Invoke("ShowTapToContinue", 4f);
     }
 
-    private void ShowLogin(string msg) {
+    private IEnumerator TypeDialogue(string msg, TMP_Text text) {
+        text.SetText("");
+        foreach (char l in msg.ToCharArray()) {
+            text.SetText(text.text += l);
+            if (".!?".Contains(l.ToString())) {
+                yield return new WaitForSeconds(messageSpeed * 10);
+            } else {
+                yield return new WaitForSeconds(messageSpeed);
+            }
+        }
+        yield return null;
+    }
+
+    private void ShowTapToContinue() {
+        tapToContinue.enabled = true;
+    }
+
+    private IEnumerator ShowLogin(string msg) {
+        yield return new WaitForSeconds(transitionLength / 2);
         titlePanel.SetActive(false);
         messagePanel.SetActive(false);
         loginPanel.SetActive(true);
@@ -184,9 +219,20 @@ public class GameManager : MonoBehaviour {
         OnProceed();
     }
 
-
     public void OnProceed() {
+        StartCoroutine(FadeTransition());
         welcomeIndex += 1;
+    }
+
+    private IEnumerator FadeTransition() {
+        float tTime = transitionLength / 2f;
+        transitionImage.color = new Color32(0, 0, 0, 255);
+        transitionImage.canvasRenderer.SetAlpha(0f);
+        transitionImage.CrossFadeAlpha(1f, tTime, false);
+        yield return new WaitForSeconds(tTime);
+
+        transitionImage.CrossFadeAlpha(0, tTime, false);
+        yield return new WaitForSeconds(tTime);
     }
 
     public void OnButton1() {
@@ -200,6 +246,7 @@ public class GameManager : MonoBehaviour {
             OnProceed();
         } else { //must be password
             AddCoins(-1 * GetPasswordCost(loginField.text));
+            StartCoroutine(ShowMessage(string.Format("Go forth, {0} and fullfill your destiny. After these messages.", username), transitionLength));
             OnProceed();
         }
     }
@@ -223,8 +270,6 @@ public class GameManager : MonoBehaviour {
     }
 
     public IEnumerator DisplayCoins(int startCoins) {
-        int jump = (coins - startCoins) / 10;
-
         float totalTime = 0;
         float duration = 1f;
         int showCoins = startCoins;
@@ -240,13 +285,16 @@ public class GameManager : MonoBehaviour {
         loginField.interactable = true;
     }
 
-    private void MuteAll() {
+    private IEnumerator MuteAll() {
+        StartCoroutine(ShowMessage("Disabling Sound...", transitionLength));
+        yield return new WaitForSeconds(1);
         GetComponent<AudioSource>().mute = true;
-        Invoke("MuteBG", 2f);
-    }
 
-    private void MuteBG() {
+        yield return new WaitForSeconds(2);
+        StartCoroutine(ShowMessage("Removing Color...", transitionLength));
+        yield return new WaitForSeconds(1);
         var bwBG = Resources.Load<Sprite>("Morning-BW");
         messagePanel.GetComponentInParent<Image>().sprite = bwBG;
+
     }
 }
