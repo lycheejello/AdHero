@@ -14,7 +14,6 @@ public class GameManager : MonoBehaviour {
     private string username;
     [SerializeField] TMP_InputField loginField;
 
-    //[SerializeField] private Text goldText;
     [SerializeField] private Button button1;
     [SerializeField] private Button button2;
 
@@ -47,7 +46,7 @@ public class GameManager : MonoBehaviour {
     void Start() {
         adsManager = GetComponent<AdsManager>();
         adsManager.SetAdCompleteHandler(OnAdCompleted);
-        coinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
+        coinsText.GetComponentInChildren<TMP_Text>().SetText(coins.ToString());
 
         if (welcomeComplete) {
             StartMainGame();
@@ -275,7 +274,7 @@ public class GameManager : MonoBehaviour {
         int showCoins = startCoins;
         while (showCoins != coins) {
             showCoins = (int)Mathf.Lerp(startCoins, coins, totalTime / duration);
-            coinsText.GetComponent<TMP_Text>().SetText(showCoins.ToString());
+            coinsText.GetComponentInChildren<TMP_Text>().SetText(showCoins.ToString());
             totalTime += Time.deltaTime;
             yield return null;
         }
