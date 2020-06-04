@@ -5,7 +5,7 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour {
 
-    private bool welcomeComplete = false;
+    private bool welcomeComplete = true;
 
     private AdsManager adsManager;
     [SerializeField] private GameObject welcomeSequence;
@@ -48,6 +48,9 @@ public class GameManager : MonoBehaviour {
         adsManager.SetAdCompleteHandler(OnAdCompleted);
         coinsText.GetComponentInChildren<TMP_Text>().SetText(coins.ToString());
 
+        button1.onClick.AddListener(OnButton1);
+        button2.onClick.AddListener(OnButton2);
+
         if (welcomeComplete) {
             StartMainGame();
         } else {
@@ -65,10 +68,9 @@ public class GameManager : MonoBehaviour {
         welcomeComplete = true;
         mainGame.SetActive(true);
         welcomeSequence.SetActive(false);
-        mainGame.GetComponent<MainGame>().InitMainGame(username, coins);
+        GetComponent<MainGame>().InitMainGame(username, coins);
     }
 
-    // Update is called once per frame
     void Update() {
         if (adsManager.isPlayingAd) {
             return;

@@ -1,25 +1,27 @@
 ﻿using System.Collections;
 using UnityEngine;
 using TMPro;
-using System.Xml.Serialization;
-using UnityEngine.UI;
 
 public class MainGame : MonoBehaviour {
 
     private AdsManager adsManager;
 
-    [SerializeField] GameObject mainPanel;
-    [SerializeField] GameObject earnCoinsPanel;
-    [SerializeField] GameObject accountPanel;
-    [SerializeField] GameObject levelUpPanel;
-    [SerializeField] GameObject premiumPanel;
-    //[SerializeField] GameObject messagePanel;
+    [SerializeField] private GameObject earnCoinsPanel;
+    [SerializeField] private GameObject levelUpPanel;
+    //[SerializeField] private GameObject accountPanel;
 
-    [SerializeField] GameObject usernameText;
-    [SerializeField] GameObject levelText;
+    [SerializeField] private GameObject usernameText;
+    [SerializeField] private GameObject levelText;
+    [SerializeField] private GameObject coinsText;
 
-    [SerializeField] GameObject coinsText;
+    [SerializeField] private GameObject cam;
+    private float cameraDistance = 50;
+    private float cameraSpeed = 50;
+    private float cameraTarget = 0;
+    private IEnumerator camCR;
 
+
+    [SerializeField] private SpriteRenderer bgSprite;
 
     private int coins = 50;
     private string username = "";
@@ -41,7 +43,7 @@ public class MainGame : MonoBehaviour {
         SetCoins(coin);
         coinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
 
-        NavMainMenu();
+        NavEarnCoins();
     }
 
     // Update is called once per frame
@@ -71,64 +73,33 @@ public class MainGame : MonoBehaviour {
         //}
     }
     private void NavReset() {
-        mainPanel.SetActive(false);
-        accountPanel.SetActive(false);
+        //mainPanel.SetActive(false);
+        //accountPanel.SetActive(false);
         //messagePanel.SetActive(false);
         levelUpPanel.SetActive(false);
         earnCoinsPanel.SetActive(false);
-        premiumPanel.SetActive(false);
-
-        adsManager.HideBannerAd();
-
+        //premiumPanel.SetActive(false);
+        //adsManager.HideBannerAd();
     }
 
-    public void NavMainMenu() {
-        NavReset();
-        usernameText.GetComponent<TMP_Text>().SetText(username);
-        levelText.GetComponent<TMP_Text>().SetText("Level {0}", level);
-        mainPanel.SetActive(true);
-    }
-
-    public void NavEarnCoins() {
-        NavReset();
+    private void NavEarnCoins() {
+        levelUpPanel.SetActive(false);
         earnCoinsPanel.SetActive(true);
     }
 
-    public void NavAccount() {
-        NavReset();
-        accountPanel.SetActive(true);
-    }
-
-    public void NavPremium() {
-        NavReset();
-        premiumPanel.SetActive(true);
-        adsManager.ShowBannerAd();
+    private void NavLevelUp() {
+        levelUpPanel.SetActive(true);
+        earnCoinsPanel.SetActive(false);
     }
 
     public void OnEarnCoins() {
         adsManager.ShowAd(AdsManager.AdType.Rewarded);
     }
 
-    public void NavLevelUp() {
-        NavReset();
-        levelUpPanel.SetActive(true);
-    }
-
-    /*
-    private void NavLogin(string msg, buttonText, ) {
-        titlePanel.SetActive(false);
-        messagePanel.SetActive(false);
-        loginPanel.SetActive(true);
-
-        loginPanel.GetComponentInChildren<TMP_Text>().SetText(msg);
-    }
-    */
-
-
     public void OnLevelUp() {
         level += 1;
         AddCoins(-50);
-        levelUpPanel.GetComponentInChildren<TMP_Text>().SetText("Your Hero Level\n{0}", level);
+        levelUpPanel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
     }
 
     public void AddCoins(int c) {
@@ -138,8 +109,6 @@ public class MainGame : MonoBehaviour {
     }
 
     public IEnumerator DisplayCoins(int startCoins) {
-        int jump = (coins - startCoins) / 10;
-
         float totalTime = 0;
         float duration = 1f;
         int showCoins = startCoins;
@@ -147,6 +116,28 @@ public class MainGame : MonoBehaviour {
             showCoins = (int)Mathf.Lerp(startCoins, coins, totalTime / duration);
             coinsText.GetComponent<TMP_Text>().SetText(showCoins.ToString());
             totalTime += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    public void OnToggleScreen() {
+        if (cameraTarget == 0) {
+            cameraTarget = cameraDistance;
+            NavLevelUp();
+        } else {
+            cameraTarget = 0;
+            NavEarnCoins();
+        }
+        if (camCR != null) {
+            StopCoroutine(camCR);
+        }
+        camCR = MoveCamera();
+        StartCoroutine(camCR);
+    }
+
+    private IEnumerator MoveCamera() {
+        while (Mathf.Abs(cam.transform.position.x - cameraTarget) > 0.001f) {
+            cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(cameraTarget, 0, 0), cameraSpeed * Time.deltaTime);
             yield return null;
         }
     }
@@ -176,10 +167,7 @@ public class MainGame : MonoBehaviour {
             bg = Resources.Load<Sprite>("Morning-BW");
         }
 
-        GameObject[] panels = new GameObject[] { mainPanel, earnCoinsPanel, accountPanel, levelUpPanel };
-        foreach (GameObject p in panels) {
-            p.GetComponent<Image>().sprite = bg;
-        }
+        bgSprite.sprite = bg;
     }
 
     public void OnUnlockSound() {
