@@ -1,18 +1,38 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using System;
 
 public class MainGame : MonoBehaviour {
 
     private AdsManager adsManager;
 
-    [SerializeField] private GameObject earnCoinsPanel;
-    [SerializeField] private GameObject levelUpPanel;
-    //[SerializeField] private GameObject accountPanel;
+    [SerializeField] private SpriteRenderer bgSprite;
 
-    [SerializeField] private GameObject usernameText;
-    [SerializeField] private GameObject levelText;
-    [SerializeField] private GameObject coinsText;
+    [SerializeField] private GameObject earnCoinsPanel;
+
+    [SerializeField] private GameObject rewardPanel;
+    [SerializeField] private GameObject bonusButton;
+    [SerializeField] private TMP_Text rewardText;
+
+    [SerializeField] private GameObject levelUpPanel;
+    [SerializeField] private TMP_Text levelCost;
+    [SerializeField] private TMP_Text coinsText;
+    [SerializeField] private TMP_Text gemsText;
+    [SerializeField] private Button levelUpButton;
+    [SerializeField] private GameObject[] levelImages;
+
+    [SerializeField] private GameObject shopPanel;
+    [SerializeField] private GameObject coinShopPanel;
+    [SerializeField] private GameObject coinShopContent;
+    [SerializeField] private GameObject coinShopItemPrefab;
+
+    [SerializeField] private GameObject noMoneyPanel;
+
+    [SerializeField] private GameObject navLevel;
+    [SerializeField] private TMP_Text usernameText;
 
     [SerializeField] private GameObject cam;
     private float cameraDistance = 50;
@@ -20,66 +40,83 @@ public class MainGame : MonoBehaviour {
     private float cameraTarget = 0;
     private IEnumerator camCR;
 
+    [SerializeField] private GameObject raccoon;
+    private float raccoonSpeed = 20;
+    private float raccoonTarget = 15;
+    private static float raccoonStart = 15;
+    private static float raccoonEnd = 40;
+    private IEnumerator raccoonCR;
 
-    [SerializeField] private SpriteRenderer bgSprite;
-
-    private int coins = 50;
-    private string username = "";
+    private BankManager bank;
     private int level = 1;
+    private int levelProgress = 0;
+    private int gemsRewarded = 0;
+    private bool doubleReward = false;
 
     private bool soundUnlocked = false;
     private bool colorUnlocked = false;
 
-    // Start is called before the first frame update
-    void Start() {
+    private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
+    private string[] spritesToLoad = { "Background/AdHeroBG", "Background/AdHeroBG-bw", "Background/Coin", "Background/Coin-bw"};
 
+    private void LoadSprites() {
+        foreach (string sprite in spritesToLoad) {
+            sprites[sprite] = Resources.Load<Sprite>(sprite);
+        }
     }
 
-    public void InitMainGame(string username, int coin) {
+    public void InitMainGame(string username) {
         adsManager = GetComponentInParent<AdsManager>();
         adsManager.SetAdCompleteHandler(OnAdCompleted);
+        bank = GetComponent<BankManager>();
 
         SetUsername(username);
-        SetCoins(coin);
-        coinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
+        coinsText.GetComponent<TMP_Text>().SetText(bank.GetCoins().ToString());
+        gemsText.GetComponent<TMP_Text>().SetText(bank.GetGems().ToString());
 
+        LoadSprites();
+        levelUpButton.onClick.AddListener(OnLevelUp);
+        DisplayBG();
+        DisplayLevelProgress();
+        DisplayLevelInfo();
+        ToggleSound();
+        SetupCoinShop();
+        NavReset();
         NavEarnCoins();
-    }
-
-    // Update is called once per frame
-    void Update() {
-
-
-        if (Input.touchCount > 0) {
-            Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Began) {
-                HandleInput();
-            }
-        } else if (Input.GetMouseButtonDown(0)) {
-            HandleInput();
-        }
-
     }
 
     private void OnAdCompleted(AdsManager.AdType adType) {
         if (adType == AdsManager.AdType.Rewarded) {
-            AddCoins(20);
+            if (doubleReward) {
+                gemsRewarded *= 5;
+                bonusButton.SetActive(false);
+            } else {
+                gemsRewarded = 5 * level;
+                bonusButton.SetActive(true);
+                bonusButton.GetComponentInChildren<TMP_Text>().SetText((gemsRewarded * 5).ToString());
+            }
+            rewardPanel.SetActive(true);
+            rewardText.SetText(gemsRewarded.ToString());
         }
     }
 
-    public void HandleInput() {
-        //if (messagePanel.activeSelf) {
-        //messagePanel.SetActive(false);
-        //}
+    public void OnCollectReward() {
+        AddGems(gemsRewarded);
+        gemsRewarded = 0;
+        doubleReward = false;
+        rewardPanel.SetActive(false);
     }
+
+    public void OnDoubleReward() {
+        doubleReward = true;
+        OnEarnGems();
+    }
+
     private void NavReset() {
-        //mainPanel.SetActive(false);
-        //accountPanel.SetActive(false);
-        //messagePanel.SetActive(false);
         levelUpPanel.SetActive(false);
         earnCoinsPanel.SetActive(false);
-        //premiumPanel.SetActive(false);
-        //adsManager.HideBannerAd();
+        rewardPanel.SetActive(false);
+        shopPanel.SetActive(false);
     }
 
     private void NavEarnCoins() {
@@ -92,32 +129,70 @@ public class MainGame : MonoBehaviour {
         earnCoinsPanel.SetActive(false);
     }
 
-    public void OnEarnCoins() {
+    public void ToggleNoMoney() {
+        noMoneyPanel.SetActive(false);
+        //noMoneyPanel.SetActive(!noMoneyPanel.activeSelf);
+    }
+
+    public void OnShopItem() {
+        shopPanel.SetActive(true);
+        coinShopPanel.SetActive(false);
+    }
+    
+    public void OnShopCoin() {
+        coinShopPanel.SetActive(true);
+    }
+
+    public void OnShopClose() {
+        shopPanel.SetActive(false);
+        coinShopPanel.SetActive(false);
+    }
+
+    public void OnEarnGems() {
         adsManager.ShowAd(AdsManager.AdType.Rewarded);
     }
 
     public void OnLevelUp() {
-        level += 1;
-        AddCoins(-50);
-        levelUpPanel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
-    }
+        levelProgress += 1;
+        AddCoins(-1 * GetLevelCost());
+        DisplayLevelProgress();
 
-    public void AddCoins(int c) {
-        int startCoins = coins;
-        coins += c;
-        StartCoroutine(DisplayCoins(startCoins));
-    }
+        navLevel.GetComponentInChildren<Slider>().value = levelProgress;
 
-    public IEnumerator DisplayCoins(int startCoins) {
-        float totalTime = 0;
-        float duration = 1f;
-        int showCoins = startCoins;
-        while (showCoins != coins) {
-            showCoins = (int)Mathf.Lerp(startCoins, coins, totalTime / duration);
-            coinsText.GetComponent<TMP_Text>().SetText(showCoins.ToString());
-            totalTime += Time.deltaTime;
-            yield return null;
+        if (levelProgress >= 3) {
+            StartCoroutine(LevelUp());
         }
+    }
+
+    private void DisplayLevelProgress() {
+        foreach(GameObject i in levelImages) {
+            i.GetComponent<Image>().sprite = sprites["Background/Coin-bw"];
+        }
+
+        for(int i = 0; i < levelProgress; i++) {
+            levelImages[i].GetComponent<Image>().sprite = sprites["Background/Coin"];
+        }
+    }
+
+    private IEnumerator LevelUp() {
+        levelUpButton.interactable = false;
+        yield return new WaitForSeconds(1f);
+        level += 1;
+        levelProgress = 0;
+        levelUpButton.interactable = true;
+        DisplayLevelInfo();
+        yield return null;
+    }
+
+    private void DisplayLevelInfo() {
+        levelUpPanel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
+        levelCost.SetText("{0}", GetLevelCost());
+        navLevel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
+        navLevel.GetComponentInChildren<Slider>().value = levelProgress;
+    }
+
+    private int GetLevelCost() {
+        return (int)Math.Pow(1.5, level);
     }
 
     public void OnToggleScreen() {
@@ -133,21 +208,32 @@ public class MainGame : MonoBehaviour {
         }
         camCR = MoveCamera();
         StartCoroutine(camCR);
+
+
+        raccoonTarget = raccoonTarget == raccoonStart ? raccoonEnd : raccoonStart;
+        if (raccoonCR != null) {
+            StopCoroutine(raccoonCR);
+        }
+        raccoonCR = MoveRaccoon();
+        StartCoroutine(raccoonCR);
     }
 
     private IEnumerator MoveCamera() {
         while (Mathf.Abs(cam.transform.position.x - cameraTarget) > 0.001f) {
-            cam.transform.position = Vector3.MoveTowards(cam.transform.position, new Vector3(cameraTarget, 0, 0), cameraSpeed * Time.deltaTime);
+            cam.transform.position = Vector2.MoveTowards(cam.transform.position, new Vector2(cameraTarget, 0), cameraSpeed * Time.deltaTime);
+            yield return null;
+        }
+    }
+    private IEnumerator MoveRaccoon() {
+        yield return new WaitForSeconds(0.5f);
+        while (Mathf.Abs(raccoon.transform.position.x - raccoonTarget) > 0.001f) {
+            raccoon.transform.position = Vector2.MoveTowards(raccoon.transform.position, new Vector2(raccoonTarget, raccoon.transform.position.y), raccoonSpeed * Time.deltaTime);
             yield return null;
         }
     }
 
-    public void SetCoins(int c) {
-        coins = c;
-    }
-
     public void SetUsername(string u) {
-        username = u;
+        usernameText.SetText(u);
     }
 
     public void OnUnlockColor() {
@@ -155,23 +241,20 @@ public class MainGame : MonoBehaviour {
 
         AddCoins(-200);
         colorUnlocked = !colorUnlocked;
-        ToggleColor();
+        DisplayBG();
     }
 
-    private void ToggleColor() {
-
-        Sprite bg;
+    private void DisplayBG() {
         if (colorUnlocked) {
-            bg = Resources.Load<Sprite>("Morning");
+            bgSprite.sprite = sprites["Background/AdHeroBG"];
         } else {
-            bg = Resources.Load<Sprite>("Morning-BW");
+            bgSprite.sprite = sprites["Background/AdHeroBG-bw"];
         }
-
-        bgSprite.sprite = bg;
     }
 
     public void OnUnlockSound() {
         AddCoins(-200);
+        soundUnlocked = !soundUnlocked;
         ToggleSound();
     }
 
@@ -181,7 +264,65 @@ public class MainGame : MonoBehaviour {
 
     private void ToggleSound() {
         AudioSource bg = GetComponentInParent<AudioSource>();
-        bg.mute = !bg.mute;
+        bg.mute = !soundUnlocked;
+    }
+
+    public void OnMysteryBox() {
+        bank.DisplayCoins(bank.GetCoins(), 0, coinsText);
+        bank.DisplayCoins(bank.GetGems(), 0, gemsText);
+        bank.ResetBank();
+    }
+
+
+    int[] cost = { 1, 9, 49, 99, 0, 999 };
+    int[] reward = { 5, 480, 0, 4500, 1, 40000 };
+    string[] tag = { "Sale", "Limited Time", "Popular", "Best Deal", "Free", "+20%" };
+    private void SetupCoinShop() {
+        foreach (Transform child in coinShopContent.transform) {
+            GameObject.Destroy(child.gameObject);
+        }
+
+        for (int i = 0; i < cost.Length; i++) {
+            GameObject item = Instantiate(coinShopItemPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+            TMP_Text[] itemText = item.GetComponentsInChildren<TMP_Text>();
+
+            itemText[0].text = reward[i].ToString();
+            itemText[1].text = cost[i].ToString();
+            itemText[2].text = tag[i];
+
+            item.transform.SetParent(coinShopContent.transform, false);
+
+            int j = i;
+            item.GetComponentInChildren<Button>().onClick.AddListener(() => OnBuy(j));
+        }
+    }
+
+    private void OnBuy(int i) {
+        if (AddGems(-1 * cost[i])) {
+            AddCoins(reward[i]);
+        }
+    }
+
+    public bool AddCoins(int c) {
+        int startCoins = bank.GetCoins();
+        int balance = bank.AddCoins(c);
+        if (balance >= 0) {
+            StartCoroutine(bank.DisplayCoins(startCoins, balance, coinsText));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public bool AddGems(int g) {
+        int startGems = bank.GetGems();
+        int balance = bank.AddGems(g);
+        if (balance >= 0) {
+            StartCoroutine(bank.DisplayCoins(startGems, balance, gemsText));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //TODO screen transitions: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/HOWTO-UIScreenTransition.html

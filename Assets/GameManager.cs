@@ -2,17 +2,20 @@
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Linq;
 
 public class GameManager : MonoBehaviour {
 
-    private bool welcomeComplete = true;
+    private bool welcomeComplete = false;
 
     private AdsManager adsManager;
     [SerializeField] private GameObject welcomeSequence;
     [SerializeField] private GameObject mainGame;
 
     private string username;
+    private string password;
     [SerializeField] TMP_InputField loginField;
+    [SerializeField] TMP_Text placeholder;
 
     [SerializeField] private Button button1;
     [SerializeField] private Button button2;
@@ -36,22 +39,29 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] private GameObject loginPanel;
 
-    private int coins = 0;
+    private BankManager bank;
     [SerializeField] private GameObject coinsText;
-
 
     [SerializeField] private Image transitionImage;
     [SerializeField] private float transitionLength = 0.4f;
 
+
+
     void Start() {
         adsManager = GetComponent<AdsManager>();
         adsManager.SetAdCompleteHandler(OnAdCompleted);
-        coinsText.GetComponentInChildren<TMP_Text>().SetText(coins.ToString());
+        bank = GetComponent<BankManager>();
+
+        coinsText.GetComponentInChildren<TMP_Text>().SetText(bank.GetCoins().ToString());
 
         button1.onClick.AddListener(OnButton1);
         button2.onClick.AddListener(OnButton2);
 
+        welcomeComplete = PlayerPrefs.GetInt("welcomeComplete") == 0 ? false : true;
+
+        welcomeComplete = true;
         if (welcomeComplete) {
+            username = PlayerPrefs.GetString("username");
             StartMainGame();
         } else {
             welcomeSequence.SetActive(true);
@@ -66,13 +76,16 @@ public class GameManager : MonoBehaviour {
 
     private void StartMainGame() {
         welcomeComplete = true;
+        PlayerPrefs.SetInt("welcomeComplete", 1);
+        PlayerPrefs.SetString("username", username);
+        PlayerPrefs.SetString("password", password);
         mainGame.SetActive(true);
         welcomeSequence.SetActive(false);
-        GetComponent<MainGame>().InitMainGame(username, coins);
+        GetComponent<MainGame>().InitMainGame(username);
     }
 
     void Update() {
-        if (adsManager.isPlayingAd) {
+        if (adsManager.isPlayingAd || welcomeComplete) {
             return;
         }
 
@@ -98,16 +111,41 @@ public class GameManager : MonoBehaviour {
                 coinsText.SetActive(true);
                 break;
             case 3:
-                StartCoroutine(ShowLogin("Username cost based on whatever"));
-                if (loginField.interactable) {
-                    button1.GetComponentInChildren<TMP_Text>().SetText("Confirm username\n({0}g)", GetUserNameCost(loginField.text));
+                StartCoroutine(ShowLogin("Free username quote!"));
+                TMP_Text buttonText = button1.GetComponentInChildren<TMP_Text>();
+                if (IsValidUsername(loginField.text)) {
+                    button1.enabled = true;
+                    buttonText.SetText("{0}", GetUsernameCost(loginField.text));
+                } else {
+                    button1.enabled = false;
+                    buttonText.SetText("--");
                 }
+                /*
+                if (loginField.interactable) {
+                } else {
+                    buttonText.SetText("Unlock username\n({0}g)", GetUsernameCost(loginField.text));
+                }
+                */
                 break;
             case 4:
-                StartCoroutine(ShowLogin("Password cost based on whoever"));
-                if (loginField.interactable) {
-                    button1.GetComponentInChildren<TMP_Text>().SetText("Confirm password\n({0}g)", GetUserNameCost(loginField.text));
+                placeholder.text = "Password";
+                StartCoroutine(ShowLogin("Create password"));
+                TMP_Text pwText = button1.GetComponentInChildren<TMP_Text>();
+                pwText.SetText("{0}", GetPasswordCost(loginField.text));
+
+                if (IsValidUsername(loginField.text)) {
+                    button1.enabled = true;
+                    pwText.SetText("{0}", GetUsernameCost(loginField.text));
+                } else {
+                    button1.enabled = false;
+                    pwText.SetText("--");
                 }
+                /*
+                if (loginField.interactable) {
+                } else {
+                    pwText.SetText("Unlock password\n({0}g)", GetPasswordCost(loginField.text));
+                }
+                */
                 break;
             default:
                 break;
@@ -122,7 +160,7 @@ public class GameManager : MonoBehaviour {
         switch (welcomeIndex) {
             case 0:
                 OnProceed();
-                StartCoroutine(ShowMessage("Welcome, Hero! Please enjoy this ad to for a free ADHERO PREMIUM trial.", transitionLength));
+                StartCoroutine(ShowMessage("The following sponsered message will be a tutorial on how to play this game.", transitionLength));
                 break;
             case 1:
                 OnProceedWithAd(AdsManager.AdType.RewardedInterstitial);
@@ -158,9 +196,10 @@ public class GameManager : MonoBehaviour {
         switch (welcomeIndex) {
             case 2:
                 StartCoroutine(ShowMessage("Here are some coins to start you off.", transitionLength));
-                AddCoins(50); break;
+                AddCoins(50); 
+                break;
             case 6:
-                StartCoroutine(ShowMessage(string.Format("Your AdHero Premium trial has ended.", username), transitionLength));
+                StartCoroutine(ShowMessage(string.Format("Your AdHero premium trial has ended.", username), transitionLength));
                 break;
         }
     }
@@ -173,10 +212,10 @@ public class GameManager : MonoBehaviour {
 
     private IEnumerator ShowMessage(string msg, float waitTime) {
         TMP_Text messageText = messagePanel.GetComponentInChildren<TMP_Text>();
-        messageText.SetText("");
         if (messageCoroutine != null) {
             StopCoroutine(messageCoroutine);
         }
+        messageText.text = "";
         tapToContinue.enabled = false;
         yield return new WaitForSeconds(waitTime / 2);
         titlePanel.SetActive(false);
@@ -199,7 +238,20 @@ public class GameManager : MonoBehaviour {
                 yield return new WaitForSeconds(messageSpeed);
             }
         }
-        yield return null;
+
+        if (msg.Substring(msg.Length - 3) == "...") {
+            int i = 2;
+            while (true) {
+                if (i <= 1) { 
+                    text.SetText(text.text += ".");
+                    i += 1;
+                } else {
+                    text.SetText(msg.Substring(0, msg.Length - 2));
+                    i = 0;
+                }
+                yield return new WaitForSeconds(messageSpeed * 10);
+            }
+        }
     }
 
     private void ShowTapToContinue() {
@@ -241,44 +293,66 @@ public class GameManager : MonoBehaviour {
             AddCoins(-5);
             UnlockUsername();
         } else if (welcomeIndex == 3) { //username
-            AddCoins(-1 * GetUserNameCost(loginField.text));
-            username = loginField.text;
-            loginField.text = "";
-            OnProceed();
+            if (AddCoins(-1 * GetUsernameCost(loginField.text))) {
+                username = loginField.text;
+                loginField.text = "";
+                OnProceed();
+            }
         } else { //must be password
-            AddCoins(-1 * GetPasswordCost(loginField.text));
-            StartCoroutine(ShowMessage(string.Format("Go forth, {0} and fullfill your destiny. After these messages.", username), transitionLength));
-            OnProceed();
+            if (AddCoins(-1 * GetUsernameCost(loginField.text))) {
+                password = loginField.text;
+                StartCoroutine(ShowMessage(string.Format("Go forth, {0} and fullfill your destiny... after these messages.", username), transitionLength));
+                OnProceed();
+            }
         }
     }
 
     public void OnButton2() {
         adsManager.ShowAd(AdsManager.AdType.Rewarded);
     }
-    private int GetUserNameCost(string name) {
-        return name.Length * 10;
+
+    private bool IsValidUsername(string name) {
+        return name.Length <= 18 && name.Length > 0;
+    }
+
+    private int GetUsernameCost(string name) {
+        /*
+        character cost( base cost = 50g. Dach additional chracter = -2g cost. 
+        If there is at least 1 letter and 1 number, each characater cost is -5fg. 
+        if there is at least 1 number, 1 letter, and 1 symbol, each character cost is -10g.
+        If there is at least 1 number, 1 letter, 1 symbol, and 1 cap letter, everything is free
+        */
+        int cost = 50;
+        int discountPerLetter = 2;
+        if (name.Any(char.IsLetter) && name.Any(char.IsDigit)) {
+            discountPerLetter = 5;
+            if (!name.All(char.IsLetterOrDigit)) {
+                discountPerLetter = 10;
+                if (name.Any(char.IsUpper) && name.Any(char.IsLower)) {
+                    cost = 0;
+                }
+            }
+        }
+
+        if (cost == 0) {
+            return Mathf.Max(cost - discountPerLetter * name.Length, -10);
+        } else {
+            return Mathf.Max(cost - discountPerLetter * name.Length, 0);
+        }
     }
 
     private int GetPasswordCost(string password) {
-        return password.Length * 10;
+        return GetUsernameCost(password);
     }
 
-
-    public void AddCoins(int c) {
-        int startCoins = coins;
-        coins += c;
-        StartCoroutine(DisplayCoins(startCoins));
-    }
-
-    public IEnumerator DisplayCoins(int startCoins) {
-        float totalTime = 0;
-        float duration = 1f;
-        int showCoins = startCoins;
-        while (showCoins != coins) {
-            showCoins = (int)Mathf.Lerp(startCoins, coins, totalTime / duration);
-            coinsText.GetComponentInChildren<TMP_Text>().SetText(showCoins.ToString());
-            totalTime += Time.deltaTime;
-            yield return null;
+    public bool AddCoins(int c) {
+        int startCoins = bank.GetCoins();
+        int balance = bank.AddCoins(c);
+        if (balance >= 0) {
+            StartCoroutine(bank.DisplayCoins(startCoins, balance, coinsText.GetComponentInChildren<TMP_Text>()));
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -287,15 +361,15 @@ public class GameManager : MonoBehaviour {
     }
 
     private IEnumerator MuteAll() {
-        StartCoroutine(ShowMessage("Disabling Sound...", transitionLength));
-        yield return new WaitForSeconds(1);
+        StartCoroutine(ShowMessage("Disabling sound...", transitionLength));
+        yield return new WaitForSeconds(1.5f);
         GetComponent<AudioSource>().mute = true;
 
-        yield return new WaitForSeconds(2);
-        StartCoroutine(ShowMessage("Removing Color...", transitionLength));
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(3);
+        StartCoroutine(ShowMessage("Removing color...", transitionLength));
+        yield return new WaitForSeconds(1.5f);
         var bwBG = Resources.Load<Sprite>("Morning-BW");
         messagePanel.GetComponentInParent<Image>().sprite = bwBG;
-
     }
+
 }

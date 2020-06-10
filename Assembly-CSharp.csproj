@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\AdsManager.cs" />
+    <Compile Include="Assets\BankManager.cs" />
     <Compile Include="Assets\Blue Cartoon UI\Demo_Assets\scripts\GUI_Demo.cs" />
     <Compile Include="Assets\GameManager.cs" />
     <Compile Include="Assets\MainGame.cs" />
