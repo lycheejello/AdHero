@@ -22,12 +22,14 @@ public class MainGame : MonoBehaviour {
     [SerializeField] private TMP_Text coinsText;
     [SerializeField] private TMP_Text gemsText;
     [SerializeField] private Button levelUpButton;
-    [SerializeField] private GameObject[] levelImages;
+    [SerializeField] private GameObject levelImages;
+    [SerializeField] private GameObject levelParticles;
+
 
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private GameObject coinShopPanel;
     [SerializeField] private GameObject coinShopContent;
-    [SerializeField] private GameObject coinShopItemPrefab;
+    [SerializeField] private GameObject[] coinShopItemPrefab;
 
     [SerializeField] private GameObject noMoneyPanel;
 
@@ -36,22 +38,18 @@ public class MainGame : MonoBehaviour {
 
     [SerializeField] private GameObject cam;
     private float cameraDistance = 50;
-    private float cameraSpeed = 50;
+    [SerializeField]
+    private float cameraSpeed = 100;
     private float cameraTarget = 0;
     private IEnumerator camCR;
 
-    [SerializeField] private GameObject raccoon;
-    private float raccoonSpeed = 20;
-    private float raccoonTarget = 15;
-    private static float raccoonStart = 15;
-    private static float raccoonEnd = 40;
-    private IEnumerator raccoonCR;
+    [SerializeField] private AnimationManager animation;
 
     private BankManager bank;
     private int level = 1;
     private int levelProgress = 0;
     private int gemsRewarded = 0;
-    private bool doubleReward = false;
+    private bool bonusReward = false;
 
     private bool soundUnlocked = false;
     private bool colorUnlocked = false;
@@ -76,6 +74,7 @@ public class MainGame : MonoBehaviour {
 
         LoadSprites();
         levelUpButton.onClick.AddListener(OnLevelUp);
+        ResetCamera();
         DisplayBG();
         DisplayLevelProgress();
         DisplayLevelInfo();
@@ -87,7 +86,7 @@ public class MainGame : MonoBehaviour {
 
     private void OnAdCompleted(AdsManager.AdType adType) {
         if (adType == AdsManager.AdType.Rewarded) {
-            if (doubleReward) {
+            if (bonusReward) {
                 gemsRewarded *= 5;
                 bonusButton.SetActive(false);
             } else {
@@ -101,15 +100,15 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnCollectReward() {
-        AddGems(gemsRewarded);
+        AddCoins(gemsRewarded);
         gemsRewarded = 0;
-        doubleReward = false;
+        bonusReward = false;
         rewardPanel.SetActive(false);
     }
 
     public void OnDoubleReward() {
-        doubleReward = true;
-        OnEarnGems();
+        bonusReward = true;
+        OnAdReward();
     }
 
     private void NavReset() {
@@ -148,38 +147,55 @@ public class MainGame : MonoBehaviour {
         coinShopPanel.SetActive(false);
     }
 
-    public void OnEarnGems() {
+    public void OnAdReward() {
         adsManager.ShowAd(AdsManager.AdType.Rewarded);
     }
 
     public void OnLevelUp() {
-        levelProgress += 1;
-        AddCoins(-1 * GetLevelCost());
-        DisplayLevelProgress();
+        if (AddCoins(-1 * GetLevelCost())) {
+            levelProgress += 1;
 
-        navLevel.GetComponentInChildren<Slider>().value = levelProgress;
+            StartCoroutine(AnimateLevelBar());
+            DisplayLevelProgress();
 
-        if (levelProgress >= 3) {
-            StartCoroutine(LevelUp());
+            if (levelProgress >= 3) {
+                StartCoroutine(LevelUp());
+            }
+        }
+
+    }
+
+    private IEnumerator AnimateLevelBar() {
+        float current = navLevel.GetComponentInChildren<Slider>().value;
+        float totalTime = 0;
+        float moveSpeed = 15;
+        while (current != levelProgress) {
+            current = Mathf.MoveTowards(current, levelProgress, Time.deltaTime * moveSpeed);
+            navLevel.GetComponentInChildren<Slider>().value = current;
+            totalTime += Time.deltaTime;
+            yield return null;
         }
     }
 
     private void DisplayLevelProgress() {
-        foreach(GameObject i in levelImages) {
-            i.GetComponent<Image>().sprite = sprites["Background/Coin-bw"];
-        }
-
-        for(int i = 0; i < levelProgress; i++) {
-            levelImages[i].GetComponent<Image>().sprite = sprites["Background/Coin"];
+        SpriteRenderer[] levelSprites = levelImages.GetComponentsInChildren<SpriteRenderer>();
+        for(int i = 0; i < 3; i++) {
+            if (i < levelProgress) {
+                levelSprites[i].sprite = sprites["Background/Coin"];
+            } else {
+                levelSprites[i].sprite = sprites["Background/Coin-bw"];
+            }
         }
     }
 
     private IEnumerator LevelUp() {
+        PlayFireworks();
+        level += 1;
         levelUpButton.interactable = false;
         yield return new WaitForSeconds(1f);
-        level += 1;
         levelProgress = 0;
         levelUpButton.interactable = true;
+        DisplayLevelProgress();
         DisplayLevelInfo();
         yield return null;
     }
@@ -188,11 +204,18 @@ public class MainGame : MonoBehaviour {
         levelUpPanel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
         levelCost.SetText("{0}", GetLevelCost());
         navLevel.GetComponentInChildren<TMP_Text>().SetText("{0}", level);
-        navLevel.GetComponentInChildren<Slider>().value = levelProgress;
+        StartCoroutine(AnimateLevelBar());
+        //navLevel.GetComponentInChildren<Slider>().value = levelProgress;
     }
 
     private int GetLevelCost() {
         return (int)Math.Pow(1.5, level);
+    }
+
+    private void PlayFireworks() {
+        foreach (ParticleSystem p in levelParticles.GetComponentsInChildren<ParticleSystem> ()) {
+            p.Play();
+        }
     }
 
     public void OnToggleScreen() {
@@ -209,13 +232,7 @@ public class MainGame : MonoBehaviour {
         camCR = MoveCamera();
         StartCoroutine(camCR);
 
-
-        raccoonTarget = raccoonTarget == raccoonStart ? raccoonEnd : raccoonStart;
-        if (raccoonCR != null) {
-            StopCoroutine(raccoonCR);
-        }
-        raccoonCR = MoveRaccoon();
-        StartCoroutine(raccoonCR);
+        animation.MoveRaccoon();
     }
 
     private IEnumerator MoveCamera() {
@@ -224,12 +241,9 @@ public class MainGame : MonoBehaviour {
             yield return null;
         }
     }
-    private IEnumerator MoveRaccoon() {
-        yield return new WaitForSeconds(0.5f);
-        while (Mathf.Abs(raccoon.transform.position.x - raccoonTarget) > 0.001f) {
-            raccoon.transform.position = Vector2.MoveTowards(raccoon.transform.position, new Vector2(raccoonTarget, raccoon.transform.position.y), raccoonSpeed * Time.deltaTime);
-            yield return null;
-        }
+
+    private void ResetCamera() {
+        cam.transform.position =  new Vector2(0, 0);
     }
 
     public void SetUsername(string u) {
@@ -239,17 +253,15 @@ public class MainGame : MonoBehaviour {
     public void OnUnlockColor() {
         //https://www.vectorstock.com/royalty-free-vector/landscape-at-morning-for-game-background-vector-14966453
 
-        AddCoins(-200);
-        colorUnlocked = !colorUnlocked;
-        DisplayBG();
+        if (AddCoins(-200)) {
+            colorUnlocked = !colorUnlocked;
+            DisplayBG();
+            SetupCoinShop();
+        }
     }
 
     private void DisplayBG() {
-        if (colorUnlocked) {
-            bgSprite.sprite = sprites["Background/AdHeroBG"];
-        } else {
-            bgSprite.sprite = sprites["Background/AdHeroBG-bw"];
-        }
+        bgSprite.sprite = colorUnlocked ? sprites["Background/AdHeroBG"] : sprites["Background/AdHeroBG-bw"];
     }
 
     public void OnUnlockSound() {
@@ -276,19 +288,19 @@ public class MainGame : MonoBehaviour {
 
     int[] cost = { 1, 9, 49, 99, 0, 999 };
     int[] reward = { 5, 480, 0, 4500, 1, 40000 };
-    string[] tag = { "Sale", "Limited Time", "Popular", "Best Deal", "Free", "+20%" };
+    string[] bannerTag = { "Sale", "Limited Time", "Popular", "Best Deal", "Free", "+20%" };
     private void SetupCoinShop() {
         foreach (Transform child in coinShopContent.transform) {
-            GameObject.Destroy(child.gameObject);
+            Destroy(child.gameObject);
         }
 
         for (int i = 0; i < cost.Length; i++) {
-            GameObject item = Instantiate(coinShopItemPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+            GameObject item = Instantiate(coinShopItemPrefab[colorUnlocked ? 0 : 1], new Vector3(0, 0, 0), Quaternion.identity);
             TMP_Text[] itemText = item.GetComponentsInChildren<TMP_Text>();
 
             itemText[0].text = reward[i].ToString();
             itemText[1].text = cost[i].ToString();
-            itemText[2].text = tag[i];
+            itemText[2].text = bannerTag[i];
 
             item.transform.SetParent(coinShopContent.transform, false);
 
@@ -298,8 +310,8 @@ public class MainGame : MonoBehaviour {
     }
 
     private void OnBuy(int i) {
-        if (AddGems(-1 * cost[i])) {
-            AddCoins(reward[i]);
+        if (AddCoins(-1 * cost[i])) {
+            AddGems(reward[i]);
         }
     }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -9,7 +8,7 @@ public class TextPulse : MonoBehaviour
 
     [SerializeField]
     float fadeTime = 0.5f;
-    void Start()
+    void Awake()
     {
         text = GetComponent<TMP_Text>();
         StartCoroutine(Fade());

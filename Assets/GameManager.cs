@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Linq;
+using UnityEditorInternal;
 
 public class GameManager : MonoBehaviour {
 
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour {
     private int welcomeIndex = 0;
     [SerializeField] private GameObject titlePanel;
     [SerializeField] private GameObject messagePanel;
+    [SerializeField] private MessageAnimationManager messageAnimation;
     [SerializeField] private TMP_Text tapToContinue;
 
     [SerializeField] private float messageSpeed = 0.05f;
@@ -59,7 +61,7 @@ public class GameManager : MonoBehaviour {
 
         welcomeComplete = PlayerPrefs.GetInt("welcomeComplete") == 0 ? false : true;
 
-        welcomeComplete = true;
+        //welcomeComplete = true;
         if (welcomeComplete) {
             username = PlayerPrefs.GetString("username");
             StartMainGame();
@@ -160,7 +162,9 @@ public class GameManager : MonoBehaviour {
         switch (welcomeIndex) {
             case 0:
                 OnProceed();
-                StartCoroutine(ShowMessage("The following sponsered message will be a tutorial on how to play this game.", transitionLength));
+                StartCoroutine(ShowMessage("The following\nsponsered message\nwill be a tutorial on\nhow to play this\ngame.", transitionLength));
+                StartCoroutine(PlayAnimation(MessageAnimationManager.State.Wave, 0));
+                Invoke("ShowTapToContinue", transitionLength + 4f);
                 break;
             case 1:
                 OnProceedWithAd(AdsManager.AdType.RewardedInterstitial);
@@ -195,11 +199,14 @@ public class GameManager : MonoBehaviour {
 
         switch (welcomeIndex) {
             case 2:
-                StartCoroutine(ShowMessage("Here are some coins to start you off.", transitionLength));
+                StartCoroutine(ShowMessage("Here are some coins\nto start you off.", transitionLength));
+                StartCoroutine(PlayAnimation(MessageAnimationManager.State.Earn, 0));
                 AddCoins(50); 
+                Invoke("ShowTapToContinue", transitionLength + 2.5f);
                 break;
             case 6:
                 StartCoroutine(ShowMessage(string.Format("Your AdHero premium trial has ended.", username), transitionLength));
+                Invoke("ShowTapToContinue", transitionLength + 2f);
                 break;
         }
     }
@@ -225,8 +232,14 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(waitTime / 2);
         messageCoroutine = TypeDialogue(msg, messageText);
         StartCoroutine(messageCoroutine);
-        Invoke("ShowTapToContinue", 4f);
     }
+
+    private IEnumerator PlayAnimation(MessageAnimationManager.State state, float delay) {
+        yield return new WaitForSeconds(delay);
+        messageAnimation.SetAnimation(state);
+        yield return null;
+    }
+
 
     private IEnumerator TypeDialogue(string msg, TMP_Text text) {
         text.SetText("");
@@ -301,7 +314,9 @@ public class GameManager : MonoBehaviour {
         } else { //must be password
             if (AddCoins(-1 * GetUsernameCost(loginField.text))) {
                 password = loginField.text;
-                StartCoroutine(ShowMessage(string.Format("Go forth, {0} and fullfill your destiny... after these messages.", username), transitionLength));
+                StartCoroutine(ShowMessage(string.Format("Go forth, {0}\nand fullfill your\ndestiny...\n\nafter these\nmessages.", username), transitionLength));
+                StartCoroutine(PlayAnimation(MessageAnimationManager.State.Sword, transitionLength / 2));
+                Invoke("ShowTapToContinue", transitionLength + 4.5f);
                 OnProceed();
             }
         }
@@ -362,14 +377,17 @@ public class GameManager : MonoBehaviour {
 
     private IEnumerator MuteAll() {
         StartCoroutine(ShowMessage("Disabling sound...", transitionLength));
+        StartCoroutine(PlayAnimation(MessageAnimationManager.State.Sad, 0));
         yield return new WaitForSeconds(1.5f);
         GetComponent<AudioSource>().mute = true;
 
         yield return new WaitForSeconds(3);
         StartCoroutine(ShowMessage("Removing color...", transitionLength));
         yield return new WaitForSeconds(1.5f);
-        var bwBG = Resources.Load<Sprite>("Morning-BW");
+        var bwBG = Resources.Load<Sprite>("Background/Morning-BW");
         messagePanel.GetComponentInParent<Image>().sprite = bwBG;
+        StartCoroutine(PlayAnimation(MessageAnimationManager.State.Fall, 1f));
+        Invoke("ShowTapToContinue", 3f);
     }
 
 }

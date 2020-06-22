@@ -2,6 +2,8 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - AdsManager
+    - AnimationManager
+    - BankManager
     - GameManager
     - MainGame
     - TextPulse
@@ -22,6 +24,14 @@ ScriptsOnlyBuild:
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
     - TMPro.TextMeshProUGUI
+    UnityEditor.Graphs.dll:
+    - UnityEditor.Graphs.AnimationBlendTree.Graph
+    - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.AnyStateNode
+    - UnityEditor.Graphs.AnimationStateMachine.Graph
+    - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.StateNode
+    - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -61,11 +71,17 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 49
       Script: {instanceID: 0}
+    - Class: 74
+      Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
     - Class: 82
       Script: {instanceID: 0}
     - Class: 83
+      Script: {instanceID: 0}
+    - Class: 91
+      Script: {instanceID: 0}
+    - Class: 95
       Script: {instanceID: 0}
     - Class: 104
       Script: {instanceID: 0}
@@ -74,53 +90,57 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 11226}
     - Class: 114
-      Script: {instanceID: 11536}
+      Script: {instanceID: 11432}
     - Class: 114
-      Script: {instanceID: 11590}
+      Script: {instanceID: 11506}
     - Class: 114
-      Script: {instanceID: 11642}
+      Script: {instanceID: 11540}
     - Class: 114
-      Script: {instanceID: 11696}
+      Script: {instanceID: 11594}
     - Class: 114
-      Script: {instanceID: 11770}
+      Script: {instanceID: 11646}
     - Class: 114
-      Script: {instanceID: 11944}
+      Script: {instanceID: 11700}
     - Class: 114
-      Script: {instanceID: 12112}
+      Script: {instanceID: 11774}
     - Class: 114
-      Script: {instanceID: 12288}
+      Script: {instanceID: 11946}
     - Class: 114
-      Script: {instanceID: 12340}
+      Script: {instanceID: 12114}
     - Class: 114
-      Script: {instanceID: 12660}
+      Script: {instanceID: 12290}
     - Class: 114
-      Script: {instanceID: 12868}
+      Script: {instanceID: 12342}
     - Class: 114
-      Script: {instanceID: 13050}
+      Script: {instanceID: 12662}
     - Class: 114
-      Script: {instanceID: 13146}
+      Script: {instanceID: 12870}
     - Class: 114
-      Script: {instanceID: 13196}
+      Script: {instanceID: 13052}
     - Class: 114
-      Script: {instanceID: 13406}
+      Script: {instanceID: 13148}
     - Class: 114
-      Script: {instanceID: 13410}
+      Script: {instanceID: 13198}
     - Class: 114
-      Script: {instanceID: 13428}
+      Script: {instanceID: 13408}
     - Class: 114
-      Script: {instanceID: 13442}
+      Script: {instanceID: 13412}
     - Class: 114
-      Script: {instanceID: 13582}
+      Script: {instanceID: 13430}
     - Class: 114
-      Script: {instanceID: 13746}
+      Script: {instanceID: 13444}
     - Class: 114
-      Script: {instanceID: 13852}
+      Script: {instanceID: 13584}
     - Class: 114
-      Script: {instanceID: 14152}
+      Script: {instanceID: 13748}
     - Class: 114
-      Script: {instanceID: 14506}
+      Script: {instanceID: 13854}
     - Class: 114
-      Script: {instanceID: 14552}
+      Script: {instanceID: 14154}
+    - Class: 114
+      Script: {instanceID: 14508}
+    - Class: 114
+      Script: {instanceID: 14554}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -128,6 +148,10 @@ ScriptsOnlyBuild:
     - Class: 157
       Script: {instanceID: 0}
     - Class: 196
+      Script: {instanceID: 0}
+    - Class: 198
+      Script: {instanceID: 0}
+    - Class: 199
       Script: {instanceID: 0}
     - Class: 212
       Script: {instanceID: 0}
@@ -178,6 +202,12 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
+      Hash: b8dc485fa115a2c88af21bfff099cc97
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: AnimationManager
+  - hash:
+      serializedVersion: 2
       Hash: c3d3430df9e3ea95e3e3d587961390fb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -188,6 +218,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: ActivationTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 6cef11836e25a10dff42370b8e14afd4
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: BankManager
   - hash:
       serializedVersion: 2
       Hash: aeb62f729c52c814dec86c47dcac1471
@@ -278,12 +314,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: AnimationTrack
-  - hash:
-      serializedVersion: 2
-      Hash: b6b2235c32352befdf659a5b0f0e43a1
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: GUI_Demo
   - hash:
       serializedVersion: 2
       Hash: cf9f5cf2c3145a37ac07f00e50e460f9
@@ -448,7 +478,7 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
-      Hash: 3be7eaca5b0aa27db0f8b9b71086cb8c
+      Hash: f1497460fbb51c87e577b3202f64c048
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -514,7 +544,7 @@ ScriptsOnlyBuild:
     className: Physics2DRaycaster
   - hash:
       serializedVersion: 2
-      Hash: 202bcb6bc10f1f4ed51397ffbcd774a9
+      Hash: 924aa995bf77932c21a3fd07a615298b
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: MainGame
