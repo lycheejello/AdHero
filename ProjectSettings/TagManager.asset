@@ -44,9 +44,9 @@ TagManager:
   - name: Background
     uniqueID: 1847998395
     locked: 0
-  - name: Player
-    uniqueID: 3659600271
-    locked: 0
   - name: Doodad
     uniqueID: 3146679325
+    locked: 0
+  - name: Player
+    uniqueID: 3659600271
     locked: 0

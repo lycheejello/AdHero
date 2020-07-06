@@ -10,6 +10,9 @@ public class MainGame : MonoBehaviour {
     private AdsManager adsManager;
 
     [SerializeField] private SpriteRenderer bgSprite;
+    [SerializeField] private SpriteRenderer ground;
+    [SerializeField] private GameObject frontHills;
+    [SerializeField] private GameObject backHills;
 
     [SerializeField] private GameObject earnCoinsPanel;
 
@@ -55,7 +58,11 @@ public class MainGame : MonoBehaviour {
     private bool colorUnlocked = false;
 
     private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
-    private string[] spritesToLoad = { "Background/Background", "Background/Background-bw", "Background/Coin", "Background/Coin-bw"};
+    private string[] spritesToLoad = {  "Background/Background", "Background/Background-bw", 
+                                        "Background/Coin", "Background/Coin-bw", 
+                                        "Background/hill front", "Background/hill front-bw",
+                                        "Background/hill back", "Background/hill back-bw",
+                                        "Background/Ground2", "Background/Ground2-bw"};
 
     private void LoadSprites() {
         foreach (string sprite in spritesToLoad) {
@@ -264,6 +271,15 @@ public class MainGame : MonoBehaviour {
 
     private void DisplayBG() {
         bgSprite.sprite = colorUnlocked ? sprites["Background/Background"] : sprites["Background/Background-bw"];
+        ground.sprite = colorUnlocked ? sprites["Background/Ground2"] : sprites["Background/Ground2-bw"];
+
+        foreach(SpriteRenderer hillFront in frontHills.GetComponentsInChildren<SpriteRenderer>()) {
+            hillFront.sprite = colorUnlocked ? sprites["Background/hill front"] : sprites["Background/hill front-bw"];
+        }
+
+        foreach(SpriteRenderer hillBack in backHills.GetComponentsInChildren<SpriteRenderer>()) {
+            hillBack.sprite = colorUnlocked ? sprites["Background/hill back"] : sprites["Background/hill back-bw"];
+        }
     }
 
     public void OnUnlockSound() {

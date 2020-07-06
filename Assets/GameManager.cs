@@ -161,7 +161,7 @@ public class GameManager : MonoBehaviour {
         switch (welcomeIndex) {
             case 0:
                 OnProceed();
-                StartCoroutine(ShowMessage("The following\nsponsered message\nwill be a tutorial on\nhow to play this\ngame.", transitionLength));
+                StartCoroutine(ShowMessage("The following\nsponsored message\nwill be a tutorial on\nhow to play this\ngame.", transitionLength));
                 StartCoroutine(PlayAnimation(MessageAnimationManager.State.Wave, 0));
                 Invoke("ShowTapToContinue", transitionLength + 4f);
                 break;
@@ -383,8 +383,10 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(3);
         StartCoroutine(ShowMessage("Removing color...", transitionLength));
         yield return new WaitForSeconds(1.5f);
-        var bwBG = Resources.Load<Sprite>("Background/Morning-BW");
+        var bwBG = Resources.Load<Sprite>("Background/Background-half-bw");
         messagePanel.GetComponentInParent<Image>().sprite = bwBG;
+        var bwGround = Resources.Load<Sprite>("Background/Ground2-bw");
+        messagePanel.GetComponentInChildren<Image>().sprite = bwGround;
         StartCoroutine(PlayAnimation(MessageAnimationManager.State.Fall, 1f));
         Invoke("ShowTapToContinue", 3f);
     }
