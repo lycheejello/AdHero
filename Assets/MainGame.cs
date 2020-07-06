@@ -43,7 +43,7 @@ public class MainGame : MonoBehaviour {
     private float cameraTarget = 0;
     private IEnumerator camCR;
 
-    [SerializeField] private AnimationManager animation;
+    [SerializeField] private AnimationManager animationManager;
 
     private BankManager bank;
     private int level = 1;
@@ -55,10 +55,11 @@ public class MainGame : MonoBehaviour {
     private bool colorUnlocked = false;
 
     private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
-    private string[] spritesToLoad = { "Background/AdHeroBG", "Background/AdHeroBG-bw", "Background/Coin", "Background/Coin-bw"};
+    private string[] spritesToLoad = { "Background/Background", "Background/Background-bw", "Background/Coin", "Background/Coin-bw"};
 
     private void LoadSprites() {
         foreach (string sprite in spritesToLoad) {
+
             sprites[sprite] = Resources.Load<Sprite>(sprite);
         }
     }
@@ -232,7 +233,7 @@ public class MainGame : MonoBehaviour {
         camCR = MoveCamera();
         StartCoroutine(camCR);
 
-        animation.MoveRaccoon();
+        animationManager.MoveRaccoon();
     }
 
     private IEnumerator MoveCamera() {
@@ -253,7 +254,8 @@ public class MainGame : MonoBehaviour {
     public void OnUnlockColor() {
         //https://www.vectorstock.com/royalty-free-vector/landscape-at-morning-for-game-background-vector-14966453
 
-        if (AddCoins(-200)) {
+        //if (AddCoins(-200)) {
+        if (true) {
             colorUnlocked = !colorUnlocked;
             DisplayBG();
             SetupCoinShop();
@@ -261,13 +263,15 @@ public class MainGame : MonoBehaviour {
     }
 
     private void DisplayBG() {
-        bgSprite.sprite = colorUnlocked ? sprites["Background/AdHeroBG"] : sprites["Background/AdHeroBG-bw"];
+        bgSprite.sprite = colorUnlocked ? sprites["Background/Background"] : sprites["Background/Background-bw"];
     }
 
     public void OnUnlockSound() {
-        AddCoins(-200);
-        soundUnlocked = !soundUnlocked;
-        ToggleSound();
+        //if (AddCoins(-200)) {
+        if (true) {
+            soundUnlocked = !soundUnlocked;
+            ToggleSound();
+        }
     }
 
     public void OnUnlockAds() {
