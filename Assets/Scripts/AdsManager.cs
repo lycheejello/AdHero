@@ -6,6 +6,8 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
     string gameId = "3614624"; //Apple
 #elif UNITY_ANDROID
     string gameId = "3614625"; //Android
+#else
+    string gameId = "3614625"; 
 #endif
 
     bool testMode = true;
