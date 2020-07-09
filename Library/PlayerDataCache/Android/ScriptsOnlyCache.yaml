@@ -3,6 +3,7 @@ ScriptsOnlyBuild:
     Assembly-CSharp.dll:
     - AdsManager
     - AnimationManager
+    - AudioManager
     - BankManager
     - GameManager
     - MainGame
@@ -10,6 +11,10 @@ ScriptsOnlyBuild:
     - TextPulse
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
+    Unity.2D.SpriteShape.Editor.dll:
+    - UnityEditor.U2D.SpriteShapeEditorAnalytics
+    Unity.2D.SpriteShape.Runtime.dll:
+    - UnityEngine.U2D.SpriteShape
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -32,7 +37,6 @@ ScriptsOnlyBuild:
     - UnityEditor.Graphs.AnimationStateMachine.Graph
     - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
     - UnityEditor.Graphs.AnimationStateMachine.StateNode
-    - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -55,6 +59,8 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.ScrollRect
     - UnityEngine.UI.Scrollbar
     - UnityEngine.UI.Slider
+    - UnityEngine.UI.Toggle
+    - UnityEngine.UI.ToggleGroup
     - UnityEngine.UI.VerticalLayoutGroup
   sceneClasses:
     Assets/Scenes/SampleScene.unity:
@@ -113,6 +119,8 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 12292}
     - Class: 114
+      Script: {instanceID: 12310}
+    - Class: 114
       Script: {instanceID: 12344}
     - Class: 114
       Script: {instanceID: 12664}
@@ -143,7 +151,13 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 14508}
     - Class: 114
+      Script: {instanceID: 14530}
+    - Class: 114
       Script: {instanceID: 14554}
+    - Class: 114
+      Script: {instanceID: 14584}
+    - Class: 114
+      Script: {instanceID: 33848}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -165,6 +179,8 @@ ScriptsOnlyBuild:
     - Class: 223
       Script: {instanceID: 0}
     - Class: 224
+      Script: {instanceID: 0}
+    - Class: 331
       Script: {instanceID: 0}
   scriptHashData:
   - hash:
@@ -553,7 +569,7 @@ ScriptsOnlyBuild:
     className: Physics2DRaycaster
   - hash:
       serializedVersion: 2
-      Hash: 1b251d487e467042e1ff4403ae121173
+      Hash: 7ee8b103639e2ee6314f9add47ab9e00
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: MainGame
@@ -719,6 +735,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 5ffd3a02c28a31a532b844b921e638c2
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: AudioManager
   platform: 13
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

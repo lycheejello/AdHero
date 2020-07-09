@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\GambleManager.cs" />
     <Compile Include="Assets\Scripts\AdsManager.cs" />
     <Compile Include="Assets\Scripts\AnimationManager.cs" />
     <Compile Include="Assets\Scripts\AudioManager.cs" />

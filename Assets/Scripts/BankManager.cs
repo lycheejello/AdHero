@@ -17,8 +17,8 @@ public class BankManager : MonoBehaviour
         coins = PlayerPrefs.GetInt("coins", 0);
         gems = PlayerPrefs.GetInt("gems", 0);
         level = PlayerPrefs.GetInt("level", 1);
-        level = PlayerPrefs.GetInt("levelProgress", 0);
-        prestige = PlayerPrefs.GetInt("levelPrestige", 0);
+        levelProgress = PlayerPrefs.GetInt("levelProgress", 0);
+        prestige = PlayerPrefs.GetInt("prestige", 0);
     }
 
     public int AddCoins(int c) {
@@ -62,16 +62,25 @@ public class BankManager : MonoBehaviour
             LevelUp();
             levelProgress = 0;
         }
+        SaveLevelProgress();
         return levelProgress;
     }
 
     private int LevelUp() {
         level += 1;
-        if (level >= 10) {
+        if (prestige < 6 && level >= 10) {
             prestige += 1;
-            level = 0;
+            level = 1;
         }
+        SaveLevelProgress();
         return level;
+    }
+
+    private void SaveLevelProgress () {
+
+        PlayerPrefs.SetInt("levelProgress", levelProgress);
+        PlayerPrefs.SetInt("level", level);
+        PlayerPrefs.SetInt("prestige", prestige);
     }
 
     public void ResetBank() {
@@ -84,6 +93,9 @@ public class BankManager : MonoBehaviour
         PlayerPrefs.SetInt("level", 1);
         PlayerPrefs.SetInt("levelProgress", 0);
         PlayerPrefs.SetInt("prestige", 0);
+
+        PlayerPrefs.SetInt("soundUnlocked", 0);
+        PlayerPrefs.SetInt("colorUnlocked", 0);
     }
 
 }

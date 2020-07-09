@@ -9,6 +9,12 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     private AudioClip[] coinClips;
 
+    [SerializeField]
+    private AudioClip[] clickClips;
+
+    [SerializeField]
+    private AudioClip levelUpClip;
+
     public bool mute { get; set; }
 
     public void Awake() {
@@ -28,6 +34,20 @@ public class AudioManager : MonoBehaviour
             audioSource.PlayOneShot(coinClips[1]);
         }
     }
+
+    public void PlayClick(int i) {
+        if (!mute) {
+            audioSource.PlayOneShot(clickClips[i]);
+        }
+    }
+
+    public void PlayLevelUp() {
+        if (!mute) {
+            audioSource.PlayOneShot(levelUpClip);
+        }
+
+    }
+
     public void Stop() {
         audioSource.Stop(); 
     }

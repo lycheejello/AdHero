@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System;
-using System.Transactions;
+using System.ComponentModel.Design;
 
 public class MainGame : MonoBehaviour {
 
@@ -18,6 +17,7 @@ public class MainGame : MonoBehaviour {
     [SerializeField] private Image shopColorImage;
 
     [SerializeField] private Image shopSoundImage;
+    [SerializeField] private SpriteRenderer coinMound;
 
     [SerializeField] private GameObject earnCoinsPanel;
 
@@ -33,13 +33,13 @@ public class MainGame : MonoBehaviour {
     [SerializeField] private GameObject levelImages;
     [SerializeField] private GameObject levelParticles;
 
-
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private GameObject coinShopPanel;
     [SerializeField] private GameObject coinShopContent;
     [SerializeField] private GameObject[] coinShopItemPrefab;
 
     [SerializeField] private GameObject noMoneyPanel;
+    [SerializeField] private GameObject prestigePanel;
 
     [SerializeField] private GameObject navLevel;
     [SerializeField] private TMP_Text usernameText;
@@ -61,18 +61,19 @@ public class MainGame : MonoBehaviour {
     private bool colorUnlocked = false;
 
     private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
-    private string[] spritesToLoad = {  "Background/Background", "Background/Background-bw", 
-                                        "Background/Coin", "Background/Coin-bw", 
+    private string[] spritesToLoad = {  "Background/Background", "Background/Background-bw",
+                                        "Background/Coin", "Background/Coin-bw",
                                         "Background/hill front", "Background/hill front-bw",
                                         "Background/hill back", "Background/hill back-bw",
                                         "Background/Ground2", "Background/Ground2-bw",
                                         "buttons/cmyk_circle", "buttons/cmyk_circle-bw",
-                                        "buttons/sound_w", "buttons/sound_w-off"};
+                                        "buttons/sound_w", "buttons/sound_w-off",
+                                        "Background/Gold Mound/GoldMound1of6", "Background/Gold Mound/GoldMound2of6", "Background/Gold Mound/GoldMound3of6", 
+                                        "Background/Gold Mound/GoldMound4of6", "Background/Gold Mound/GoldMound5of6", "Background/Gold Mound/GoldMound6of6"};
 
 
     private void LoadSprites() {
         foreach (string sprite in spritesToLoad) {
-
             sprites[sprite] = Resources.Load<Sprite>(sprite);
         }
     }
@@ -89,10 +90,12 @@ public class MainGame : MonoBehaviour {
         LoadSprites();
         levelUpButton.onClick.AddListener(OnLevelUp);
         ResetCamera();
+        LoadPreferences();
         DisplayBG();
         DisplayLevelProgress();
         DisplayLevelInfo();
-        ToggleSound();
+        DisplayCoinMound();
+        SetupSound();
         SetupCoinShop();
         NavReset();
         NavEarnCoins();
@@ -156,16 +159,29 @@ public class MainGame : MonoBehaviour {
     }
 
     public void ToggleNoMoney() {
+        sfxManager.PlayClick(0);
         noMoneyPanel.SetActive(false);
-        //noMoneyPanel.SetActive(!noMoneyPanel.activeSelf);
+    }
+
+    public void Prestige() {
+        sfxManager.PlayCoinsMulti();
+        DisplayCoinMound();
+        prestigePanel.SetActive(true);
+    }
+
+    public void OnClosePrestige() {
+        sfxManager.PlayClick(0);
+        prestigePanel.SetActive(false);
     }
 
     public void OnShopItem() {
+        sfxManager.PlayClick(1);
         shopPanel.SetActive(true);
         coinShopPanel.SetActive(false);
     }
     
     public void OnShopCoin() {
+        sfxManager.PlayClick(1);
         coinShopPanel.SetActive(true);
     }
 
@@ -179,12 +195,18 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnLevelUp() {
-        if (AddCoins(-1 * GetLevelCost())) {
+        if (AddCoins(10)) {
             gameData.ProgressLevel();
 
+            //Player level up
             if (gameData.levelProgress == 0) {
                 StartCoroutine(AnimateLevelBar(2, 3));
                 StartCoroutine(LevelUp());
+                //Player has prestiged
+                sfxManager.PlayLevelUp();
+                if (gameData.level == 1) {
+                    Prestige();
+                }
             } else {
                 StartCoroutine(AnimateLevelBar());
             }
@@ -208,7 +230,6 @@ public class MainGame : MonoBehaviour {
             totalTime += Time.deltaTime;
             yield return null;
         }
-
     }
 
     private void DisplayLevelProgress() {
@@ -241,8 +262,7 @@ public class MainGame : MonoBehaviour {
     }
 
     private int GetLevelCost() {
-        return 3 * gameData.level;
-        //return (int)Math.Pow(1.5, level);
+        return gameData.level;
     }
 
 
@@ -253,6 +273,7 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnToggleScreen() {
+        sfxManager.PlayClick(0);
         if (cameraTarget == 0) {
             cameraTarget = cameraDistance;
             NavLevelUp();
@@ -284,12 +305,16 @@ public class MainGame : MonoBehaviour {
         usernameText.SetText(u);
     }
 
+    private void LoadPreferences() {
+        soundUnlocked = PlayerPrefs.GetInt("soundUnlocked") == 1;
+        colorUnlocked = PlayerPrefs.GetInt("colorUnlocked") == 1;
+    }
+
     public void OnUnlockColor() {
         //https://www.vectorstock.com/royalty-free-vector/landscape-at-morning-for-game-background-vector-14966453
-
-        //if (AddCoins(-200)) {
-        if (true) {
+        if (AddCoins(-40)) {
             colorUnlocked = !colorUnlocked;
+            PlayerPrefs.SetInt("colorUnlocked", colorUnlocked ? 1 : 0);
             DisplayBG();
             SetupCoinShop();
         }
@@ -323,19 +348,23 @@ public class MainGame : MonoBehaviour {
         }
     }
 
-    public void OnUnlockSound() {
-        //if (AddCoins(-200)) {
-        if (true) {
-            soundUnlocked = !soundUnlocked;
-            ToggleSound();
+    private void DisplayCoinMound() {
+        if (gameData.prestige <= 0 || gameData.prestige > 6) {
+            coinMound.sprite = null;
+        } else {
+            coinMound.sprite = sprites["Background/Gold Mound/GoldMound" + gameData.prestige + "of6"];
         }
     }
 
-    public void OnUnlockAds() {
-        adsManager.HideBannerAd();
+    public void OnUnlockSound() {
+        if (AddCoins(-40)) {
+            soundUnlocked = !soundUnlocked;
+            PlayerPrefs.SetInt("soundUnlocked", soundUnlocked ? 1 : 0);
+            SetupSound();
+        }
     }
 
-    private void ToggleSound() {
+    private void SetupSound() {
         AudioSource bgMusic = GetComponentInParent<AudioSource>();
         bgMusic.mute = !soundUnlocked;
         sfxManager.mute = !soundUnlocked;
@@ -347,7 +376,6 @@ public class MainGame : MonoBehaviour {
         gameData.DisplayCoins(gameData.gems, 0, gemsText);
         gameData.ResetBank();
     }
-
 
     int[] cost = { 1, 9, 49, 99, 0, 999 };
     int[] reward = { 5, 480, 0, 4500, 1, 40000 };
@@ -379,6 +407,7 @@ public class MainGame : MonoBehaviour {
     }
 
     public bool AddCoins(int c) {
+        sfxManager.PlayCoinSingle();
         int startCoins = gameData.coins;
         int balance = gameData.AddCoins(c);
         if (balance >= 0) {
@@ -399,6 +428,4 @@ public class MainGame : MonoBehaviour {
             return false;
         }
     }
-
-    //TODO screen transitions: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/HOWTO-UIScreenTransition.html
 }

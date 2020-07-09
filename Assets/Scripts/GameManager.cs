@@ -330,24 +330,44 @@ public class GameManager : MonoBehaviour {
     private int GetUsernameCost(string name) {
         /*
         character cost( base cost = 50g. Dach additional chracter = -2g cost. 
-        If there is at least 1 letter and 1 number, each characater cost is -5fg. 
+        If there is at least 1 letter and 1 number, each characater cost is -5g. 
         if there is at least 1 number, 1 letter, and 1 symbol, each character cost is -10g.
         If there is at least 1 number, 1 letter, 1 symbol, and 1 cap letter, everything is free
         */
         int cost = 50;
-        int discountPerLetter = 2;
-        if (name.Any(char.IsLetter) && name.Any(char.IsDigit)) {
-            discountPerLetter = 5;
-            if (!name.All(char.IsLetterOrDigit)) {
-                discountPerLetter = 10;
-                if (name.Any(char.IsUpper) && name.Any(char.IsLower)) {
-                    cost = 0;
-                }
-            }
+        int discountPerLetter = 0;
+
+        int categoriesHit = 0;
+        if (!name.All(char.IsLetterOrDigit)) {
+            categoriesHit += 1;
+        }
+        if (name.Any(char.IsDigit)) {
+            categoriesHit += 1;
+        }
+        if (name.Any(char.IsUpper)) {
+            categoriesHit += 1;
+        }
+        if (name.Any(char.IsLower)) {
+            categoriesHit += 1;
         }
 
-        if (cost == 0) {
-            return Mathf.Max(cost - discountPerLetter * name.Length, -10);
+        switch (categoriesHit) {
+            case 1:
+                discountPerLetter = 2;
+                break;
+            case 2:
+                discountPerLetter = 5;
+                break;
+            case 3:
+            case 4:
+                discountPerLetter = 10;
+                break;
+            default:
+                discountPerLetter = 0;
+                break;
+        }
+        if (categoriesHit == 4) {
+            return -10;
         } else {
             return Mathf.Max(cost - discountPerLetter * name.Length, 0);
         }
