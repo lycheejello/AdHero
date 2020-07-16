@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.ComponentModel.Design;
 
 public class MainGame : MonoBehaviour {
 
@@ -27,8 +26,6 @@ public class MainGame : MonoBehaviour {
 
     [SerializeField] private GameObject levelUpPanel;
     [SerializeField] private TMP_Text levelCost;
-    [SerializeField] private TMP_Text coinsText;
-    [SerializeField] private TMP_Text gemsText;
     [SerializeField] private Button levelUpButton;
     [SerializeField] private GameObject levelImages;
     [SerializeField] private GameObject levelParticles;
@@ -84,8 +81,6 @@ public class MainGame : MonoBehaviour {
         gameData = GetComponent<BankManager>();
 
         SetUsername(username);
-        coinsText.GetComponent<TMP_Text>().SetText(gameData.coins.ToString());
-        gemsText.GetComponent<TMP_Text>().SetText(gameData.gems.ToString());
 
         LoadSprites();
         levelUpButton.onClick.AddListener(OnLevelUp);
@@ -126,10 +121,10 @@ public class MainGame : MonoBehaviour {
 
     public void OnCollectReward() {
         if (bonusReward) {
-            AddCoins(GetBonusReward());
+            gameData.AddCoins(GetBonusReward());
             sfxManager.PlayCoinsMulti();
         } else {
-            AddCoins(GetPlayReward());
+            gameData.AddCoins(GetPlayReward());
             sfxManager.PlayCoinSingle();
         }
         bonusReward = false;
@@ -195,7 +190,7 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnLevelUp() {
-        if (AddCoins(10)) {
+        if (gameData.AddCoins(-1 * GetLevelCost())) {
             gameData.ProgressLevel();
 
             //Player level up
@@ -311,12 +306,11 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnUnlockColor() {
-        //https://www.vectorstock.com/royalty-free-vector/landscape-at-morning-for-game-background-vector-14966453
-        if (AddCoins(-40)) {
+        if (gameData.AddGems(-400)) {
             colorUnlocked = !colorUnlocked;
             PlayerPrefs.SetInt("colorUnlocked", colorUnlocked ? 1 : 0);
             DisplayBG();
-            SetupCoinShop();
+            //SetupCoinShop();
         }
     }
 
@@ -357,7 +351,7 @@ public class MainGame : MonoBehaviour {
     }
 
     public void OnUnlockSound() {
-        if (AddCoins(-40)) {
+        if (gameData.AddGems(-400)) {
             soundUnlocked = !soundUnlocked;
             PlayerPrefs.SetInt("soundUnlocked", soundUnlocked ? 1 : 0);
             SetupSound();
@@ -371,22 +365,17 @@ public class MainGame : MonoBehaviour {
         shopSoundImage.sprite = soundUnlocked ? sprites["buttons/sound_w"] : sprites["buttons/sound_w-off"];
     }
 
-    public void OnMysteryBox() {
-        gameData.DisplayCoins(gameData.coins, 0, coinsText);
-        gameData.DisplayCoins(gameData.gems, 0, gemsText);
-        gameData.ResetBank();
-    }
-
-    int[] cost = { 1, 9, 49, 99, 0, 999 };
-    int[] reward = { 5, 480, 0, 4500, 1, 40000 };
-    string[] bannerTag = { "Sale", "Limited Time", "Popular", "Best Deal", "Free", "+20%" };
+    int[] cost = { 1, 10, 49, 99, 0, 999 };
+    int[] reward = { 10, 90, 300, 900, 1, 8000 };
+    string[] bannerTag = { "Popular", "Sale", "Worst Deal", "Limited Time", "Free", "20% Less" };
     private void SetupCoinShop() {
         foreach (Transform child in coinShopContent.transform) {
             Destroy(child.gameObject);
         }
 
         for (int i = 0; i < cost.Length; i++) {
-            GameObject item = Instantiate(coinShopItemPrefab[colorUnlocked ? 0 : 1], new Vector3(0, 0, 0), Quaternion.identity);
+            //GameObject item = Instantiate(coinShopItemPrefab[colorUnlocked ? 0 : 1], new Vector3(0, 0, 0), Quaternion.identity);
+            GameObject item = Instantiate(coinShopItemPrefab[0], new Vector3(0, 0, 0), Quaternion.identity);
             TMP_Text[] itemText = item.GetComponentsInChildren<TMP_Text>();
 
             itemText[0].text = reward[i].ToString();
@@ -401,31 +390,10 @@ public class MainGame : MonoBehaviour {
     }
 
     private void OnBuy(int i) {
-        if (AddCoins(-1 * cost[i])) {
-            AddGems(reward[i]);
+        if (gameData.AddCoins(-1 * cost[i])) {
+            gameData.AddGems(reward[i]);
         }
     }
 
-    public bool AddCoins(int c) {
-        sfxManager.PlayCoinSingle();
-        int startCoins = gameData.coins;
-        int balance = gameData.AddCoins(c);
-        if (balance >= 0) {
-            StartCoroutine(gameData.DisplayCoins(startCoins, balance, coinsText));
-            return true;
-        } else {
-            return false;
-        }
-    }
 
-    public bool AddGems(int g) {
-        int startGems = gameData.gems;
-        int balance = gameData.AddGems(g);
-        if (balance >= 0) {
-            StartCoroutine(gameData.DisplayCoins(startGems, balance, gemsText));
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

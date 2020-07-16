@@ -188,7 +188,7 @@ public class GameManager : MonoBehaviour {
             case AdsManager.AdType.Interstitial:
                 break;
             case AdsManager.AdType.Rewarded:
-                AddCoins(20);
+                gameData.AddCoins(20);
                 break;
             case AdsManager.AdType.RewardedInterstitial:
                 //AddCoins(50);
@@ -199,7 +199,7 @@ public class GameManager : MonoBehaviour {
             case 2:
                 StartCoroutine(ShowMessage("Here are some coins\nto start you off.", transitionLength));
                 StartCoroutine(PlayAnimation(MessageAnimationManager.State.Earn, 0));
-                AddCoins(50); 
+                gameData.AddCoins(50); 
                 Invoke("ShowTapToContinue", transitionLength + 2.5f);
                 break;
             case 6:
@@ -300,16 +300,16 @@ public class GameManager : MonoBehaviour {
 
     public void OnButton1() {
         if (!loginField.interactable) {
-            AddCoins(-5);
+            gameData.AddCoins(-5);
             UnlockUsername();
         } else if (welcomeIndex == 3) { //username
-            if (AddCoins(-1 * GetUsernameCost(loginField.text))) {
+            if (gameData.AddCoins(-1 * GetUsernameCost(loginField.text))) {
                 username = loginField.text;
                 loginField.text = "";
                 OnProceed();
             }
         } else { //must be password
-            if (AddCoins(-1 * GetUsernameCost(loginField.text))) {
+            if (gameData.AddCoins(-1 * GetUsernameCost(loginField.text))) {
                 password = loginField.text;
                 StartCoroutine(ShowMessage(string.Format("Go forth, {0}\nand fullfill your\ndestiny...\n\nafter these\nmessages.", username), transitionLength));
                 StartCoroutine(PlayAnimation(MessageAnimationManager.State.Sword, transitionLength / 2));
@@ -375,17 +375,6 @@ public class GameManager : MonoBehaviour {
 
     private int GetPasswordCost(string password) {
         return GetUsernameCost(password);
-    }
-
-    public bool AddCoins(int c) {
-        int startCoins = gameData.coins;
-        int balance = gameData.AddCoins(c);
-        if (balance >= 0) {
-            StartCoroutine(gameData.DisplayCoins(startCoins, balance, coinsText.GetComponentInChildren<TMP_Text>()));
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void UnlockUsername() {

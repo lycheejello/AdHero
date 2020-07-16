@@ -3083,7 +3083,7 @@ GameObject:
   - component: {fileID: 280461630}
   - component: {fileID: 280461629}
   m_Layer: 5
-  m_Name: Coins Text
+  m_Name: Gems Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4037,7 +4037,7 @@ GameObject:
   - component: {fileID: 341156612}
   - component: {fileID: 341156611}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Reward Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4081,8 +4081,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1836654859577346128, guid: 28b8665f1bfffa9459d434949742b38b,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: b4e39e66b3cf1a846a70a67527b08609, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -4852,7 +4851,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9fea0fa38c4a3e944aa6f7ffc47c3de6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b4e39e66b3cf1a846a70a67527b08609, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -7998,7 +7997,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.4}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -275, y: -49.708496}
+  m_AnchoredPosition: {x: -275, y: -49.52832}
   m_SizeDelta: {x: 500, y: -100}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &620429925
@@ -8474,7 +8473,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9fea0fa38c4a3e944aa6f7ffc47c3de6, type: 3}
+  m_Sprite: {fileID: 1836654859577346128, guid: 28b8665f1bfffa9459d434949742b38b,
+    type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -9180,10 +9180,10 @@ RectTransform:
   m_Father: {fileID: 195775442}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 480.01025, y: -100}
-  m_SizeDelta: {x: 480.01025, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 480.01025, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &731807581
 MonoBehaviour:
@@ -16263,7 +16263,7 @@ GameObject:
   - component: {fileID: 997297875}
   - component: {fileID: 997297874}
   m_Layer: 5
-  m_Name: Coin Image
+  m_Name: Gems Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16617,7 +16617,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9fea0fa38c4a3e944aa6f7ffc47c3de6, type: 3}
+  m_Sprite: {fileID: 1836654859577346128, guid: 28b8665f1bfffa9459d434949742b38b,
+    type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -24170,8 +24171,6 @@ MonoBehaviour:
   rewardText: {fileID: 1233415112}
   levelUpPanel: {fileID: 553665851}
   levelCost: {fileID: 1550731412}
-  coinsText: {fileID: 1485907822}
-  gemsText: {fileID: 280461629}
   levelUpButton: {fileID: 1477786178}
   levelImages: {fileID: 357438021}
   levelParticles: {fileID: 1312249234}
@@ -24213,6 +24212,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af157081063100a48802c74a0ac08a86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sfxManager: {fileID: 27379719}
+  welcomeCoinsText: {fileID: 2057295031}
+  coinsText: {fileID: 1485907822}
+  gemsText: {fileID: 280461629}
   noMoneyPanel: {fileID: 1479533102}
   coinDuration: 2
 --- !u!114 &1207280914
@@ -24228,6 +24231,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gamblePanel: {fileID: 351654539}
+  rewardImages:
+  - {fileID: 21300000, guid: b4e39e66b3cf1a846a70a67527b08609, type: 3}
+  - {fileID: 21300000, guid: 9fea0fa38c4a3e944aa6f7ffc47c3de6, type: 3}
+  - {fileID: 21300000, guid: a248781c618761d419b295054c27fe30, type: 3}
+  - {fileID: 21300000, guid: f104fc498f2cad5488cb5ba294ed45d4, type: 3}
+  - {fileID: 21300000, guid: 9fe2bf0e3f1bfab4dabfcfc6df8b6538, type: 3}
+  - {fileID: 21300000, guid: 70782edd8a056cd40b3d94da2708df9e, type: 3}
+  rewardImage: {fileID: 341156611}
 --- !u!1 &1210520297
 GameObject:
   m_ObjectHideFlags: 0
@@ -25252,7 +25263,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9fea0fa38c4a3e944aa6f7ffc47c3de6, type: 3}
+  m_Sprite: {fileID: 1836654859577346128, guid: 28b8665f1bfffa9459d434949742b38b,
+    type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -27578,7 +27590,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 50, y: 0}
-  m_SizeDelta: {x: 75.19, y: 91.89}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1559053639
 MonoBehaviour:
@@ -27613,7 +27625,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 10
+  m_text: 100
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6e23197f408afb44b87918e3d9e44a0, type: 2}
   m_sharedMaterial: {fileID: -8331734749277452187, guid: e6e23197f408afb44b87918e3d9e44a0,
@@ -27683,7 +27695,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 1.6956036, w: 0}
   m_textInfo:
     textComponent: {fileID: 1559053640}
-    characterCount: 2
+    characterCount: 3
     spriteCount: 0
     spaceCount: 0
     wordCount: 1
@@ -27796,8 +27808,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1207280911}
-        m_MethodName: OnShopItem
+      - m_Target: {fileID: 1207280913}
+        m_MethodName: ResetBank
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -28447,10 +28459,10 @@ RectTransform:
   m_Father: {fileID: 195775442}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -100}
-  m_SizeDelta: {x: 480.01025, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 480.01025, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1654043753
 MonoBehaviour:
@@ -28780,7 +28792,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.4}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 277.5, y: -49.708496}
+  m_AnchoredPosition: {x: 277.5, y: -49.52832}
   m_SizeDelta: {x: 500, y: -100}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1706776177
@@ -28996,7 +29008,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1710997217
 RectTransform:
   m_ObjectHideFlags: 0
@@ -30260,7 +30272,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 50, y: 0}
-  m_SizeDelta: {x: 92.44, y: 91.89}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1806230203
 MonoBehaviour:
@@ -30295,7 +30307,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 40
+  m_text: 400
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6e23197f408afb44b87918e3d9e44a0, type: 2}
   m_sharedMaterial: {fileID: -8331734749277452187, guid: e6e23197f408afb44b87918e3d9e44a0,
@@ -30365,7 +30377,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 1.6956036, w: 0}
   m_textInfo:
     textComponent: {fileID: 1806230204}
-    characterCount: 2
+    characterCount: 3
     spriteCount: 0
     spaceCount: 0
     wordCount: 1
@@ -30737,10 +30749,10 @@ RectTransform:
   m_Father: {fileID: 195775442}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1060.0221, y: -100}
-  m_SizeDelta: {x: 200.00308, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 200.00308, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1850190380
 MonoBehaviour:
@@ -33474,7 +33486,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 50, y: 0}
-  m_SizeDelta: {x: 92.44, y: 91.89}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2119497532
 MonoBehaviour:
@@ -33509,7 +33521,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 40
+  m_text: 400
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6e23197f408afb44b87918e3d9e44a0, type: 2}
   m_sharedMaterial: {fileID: -8331734749277452187, guid: e6e23197f408afb44b87918e3d9e44a0,
@@ -33579,7 +33591,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 1.6956036, w: 0}
   m_textInfo:
     textComponent: {fileID: 2119497533}
-    characterCount: 2
+    characterCount: 3
     spriteCount: 0
     spaceCount: 0
     wordCount: 1

@@ -106,6 +106,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener {
     public void OnUnityAdsDidError(string message) {
         // Log the error.
         print("OnUnityAdsDidError");
+        print(message);
     }
 
     public void OnUnityAdsDidStart(string placementId) {

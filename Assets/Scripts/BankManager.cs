@@ -4,14 +4,22 @@ using TMPro;
 
 public class BankManager : MonoBehaviour
 {
+    [SerializeField] private AudioManager sfxManager;
+
+    [SerializeField] private TMP_Text welcomeCoinsText;
+
+    [SerializeField] private TMP_Text coinsText;
+    [SerializeField] private TMP_Text gemsText;
+
+    [SerializeField] private GameObject noMoneyPanel;
+    [SerializeField] private float coinDuration = 2f;
+
     public int coins { get; private set; }
     public int gems { get; private set; }
     public int level { get; private set; }
     public int levelProgress { get; private set; }
     public int prestige { get; private set; }
 
-    [SerializeField] private GameObject noMoneyPanel;
-    [SerializeField] private float coinDuration = 2f;
 
     void Awake() {
         coins = PlayerPrefs.GetInt("coins", 0);
@@ -19,26 +27,11 @@ public class BankManager : MonoBehaviour
         level = PlayerPrefs.GetInt("level", 1);
         levelProgress = PlayerPrefs.GetInt("levelProgress", 0);
         prestige = PlayerPrefs.GetInt("prestige", 0);
-    }
 
-    public int AddCoins(int c) {
-        if (coins + c < 0) {
-            ToggleNoMoney();
-            return -1;
-        }
-        coins += c;
-        PlayerPrefs.SetInt("coins", coins);
-        return coins;
-    }
-
-    public int AddGems(int g) {
-        if (gems + g < 0) {
-            ToggleNoMoney();
-            return -1;
-        }
-        gems += g;
-        PlayerPrefs.SetInt("gems", gems);
-        return gems;
+        welcomeCoinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
+        coinsText.GetComponent<TMP_Text>().SetText(coins.ToString());
+        gemsText.GetComponent<TMP_Text>().SetText(gems.ToString());
+        noMoneyPanel.SetActive(false);
     }
 
     public IEnumerator DisplayCoins(int startCoins, int targetCoins, TMP_Text text) {
@@ -76,6 +69,36 @@ public class BankManager : MonoBehaviour
         return level;
     }
 
+    public bool AddCoins(int c) {
+        sfxManager.PlayCoinSingle();
+        int startCoins = coins;
+        if (coins + c < 0) {
+            ToggleNoMoney();
+            return false;
+        } else {
+            coins += c;
+            PlayerPrefs.SetInt("coins", coins);
+
+            StartCoroutine(DisplayCoins(startCoins, coins, welcomeCoinsText));
+            StartCoroutine(DisplayCoins(startCoins, coins, coinsText));
+            return true;
+        }
+    }
+
+    public bool AddGems(int g) {
+        sfxManager.PlayCoinSingle();
+        int startGems = gems;
+        if (gems + g < 0) {
+            ToggleNoMoney();
+            return false;
+        } else {
+            gems += g;
+            PlayerPrefs.SetInt("gems", gems);
+            StartCoroutine(DisplayCoins(startGems, gems, gemsText));
+            return true;
+        }
+    }
+
     private void SaveLevelProgress () {
 
         PlayerPrefs.SetInt("levelProgress", levelProgress);
@@ -97,5 +120,4 @@ public class BankManager : MonoBehaviour
         PlayerPrefs.SetInt("soundUnlocked", 0);
         PlayerPrefs.SetInt("colorUnlocked", 0);
     }
-
 }
